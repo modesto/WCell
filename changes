@@ -1,3 +1,5 @@
-- fixed some issues caused by the Region -> Map renaming
-- fixed another quest-relation graph bug
-- auto-accepted quests are automatically added to the player's quest log but the details dialog still show an "Accept" button -> Need to fix SMSG_QUESTGIVER_QUEST_DETAILS
+- added Unit.AddProcHandler(ProcHandlerTemplate)
+- example to trigger a spell every second time a negative action is performed on myNPC:
+static readonly ProcHandlerTemplate spellTrigger = new TriggerSpellProcHandlerTemplate(ProcTriggerFlags.AnyHit, SpellHandler.GetSpell(SpellId.MySpell), 50);
+// ...
+ myNPC.AddProcHandler(spellTrigger);
