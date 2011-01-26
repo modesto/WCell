@@ -369,6 +369,11 @@ namespace WCell.RealmServer.Entities
 			}
 		}
 
+		public override ObjectTemplate Template
+		{
+			get { return Entry; }
+		}
+
 		public override string Name
 		{
 			get { return m_name; }
@@ -844,6 +849,12 @@ namespace WCell.RealmServer.Entities
 			m_brain.OnActivate();
 
 			m_entry.NotifyActivated(this);
+
+			if (m_spawnPoint != null)
+			{
+				// add back to pool's AIGroup
+				m_spawnPoint.Pool.SpawnedObjects.Add(this);
+			}
 		}
 		#endregion
 
@@ -942,7 +953,7 @@ namespace WCell.RealmServer.Entities
 
 		#region Decay & Dispose
 		/// <summary>
-		/// Marks this NPC lootable (usually when dead)
+		/// Marks this NPC lootable (after NPC died)
 		/// </summary>
 		private void EnterLootableState()
 		{
@@ -952,13 +963,13 @@ namespace WCell.RealmServer.Entities
 		}
 
 		/// <summary>
-		/// Marks this NPC lootable (usually when dead)
+		/// Marks this NPC non-lootable (after NPC was looted)
 		/// </summary>
 		private void EnterFinalState()
 		{
 			FirstAttacker = null;
 			RemainingDecayDelayMillis = m_entry.DefaultDecayDelayMillis;
-			if (m_entry.SkinningLoot != null)
+			if (m_entry.GetSkinningLoot() != null)
 			{
 				UnitFlags |= UnitFlags.Skinnable;
 			}
@@ -990,6 +1001,15 @@ namespace WCell.RealmServer.Entities
 
 		protected internal override void DeleteNow()
 		{
+			// make sure IsDeleted = true
+			m_Deleted = true;
+			m_entry.NotifyDeleted(this);
+
+			if (m_spawnPoint != null && m_spawnPoint.ActiveSpawnling == this)
+			{
+				// remove if NPC was for some reason still considered active in pool
+				m_spawnPoint.SignalSpawnlingDied(this);
+			}
 			m_auras.ClearWithoutCleanup();
 			base.DeleteNow();
 		}
