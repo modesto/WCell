@@ -24,6 +24,7 @@ using WCell.RealmServer.NPCs.Spawns;
 using WCell.RealmServer.NPCs.Trainers;
 using WCell.RealmServer.NPCs.Vendors;
 using WCell.RealmServer.Quests;
+using WCell.RealmServer.Spawns;
 using WCell.RealmServer.Spells;
 using WCell.Util;
 using WCell.Util.Variables;
@@ -144,7 +145,7 @@ namespace WCell.RealmServer.NPCs
 		public static uint CombatEvadeDelay = 2000;
 		#endregion
 
-		#region Global Containers & Get Methods
+		#region Misc Containers
 		[NotVariable]
 		/// <summary>
 		/// All NPCEntries by their Entry-Id
@@ -186,23 +187,6 @@ namespace WCell.RealmServer.NPCs
 		public static Dictionary<int, BarberShopStyleEntry> BarberShopStyles = new Dictionary<int, BarberShopStyleEntry>();
 
 		/// <summary>
-		/// All templates for spawn pools
-		/// </summary>
-		public static readonly Dictionary<uint, NPCSpawnPoolTemplate> SpawnPoolTemplates = new Dictionary<uint, NPCSpawnPoolTemplate>();
-
-		[NotVariable]
-		/// <summary>
-		/// All NPCSpawnEntries by their Id
-		/// </summary>
-		public static NPCSpawnEntry[] SpawnEntries = new NPCSpawnEntry[40000];
-
-		[NotVariable]
-		/// <summary>
-		/// All instances of NPCSpawnPoolTemplate by MapId
-		/// </summary>
-		public static List<NPCSpawnPoolTemplate>[] SpawnPoolsByMap = new List<NPCSpawnPoolTemplate>[(int)MapId.End];
-
-		/// <summary>
 		/// Entries of equipment to be added to NPCs
 		/// </summary>
 		[NotVariable]
@@ -221,6 +205,26 @@ namespace WCell.RealmServer.NPCs
 
 		[NotVariable]
 		internal static Spell[][] PetSpells;
+		#endregion
+
+		#region Spawn Containers
+		/// <summary>
+		/// All templates for spawn pools
+		/// </summary>
+		public static readonly Dictionary<uint, NPCSpawnPoolTemplate> SpawnPoolTemplates = new Dictionary<uint, NPCSpawnPoolTemplate>();
+
+		[NotVariable]
+		/// <summary>
+		/// All NPCSpawnEntries by their Id
+		/// </summary>
+		public static NPCSpawnEntry[] SpawnEntries = new NPCSpawnEntry[40000];
+
+		[NotVariable]
+		/// <summary>
+		/// All instances of NPCSpawnPoolTemplate by MapId
+		/// </summary>
+		public static List<NPCSpawnPoolTemplate>[] SpawnPoolsByMap = new List<NPCSpawnPoolTemplate>[(int)MapId.End];
+		#endregion
 
 		#region GetEntry
 		public static NPCEntry GetEntry(uint id, uint difficultyIndex)
@@ -274,6 +278,36 @@ namespace WCell.RealmServer.NPCs
 				return null;
 			}
 			return SpawnEntries[id];
+		}
+
+		internal static NPCSpawnPoolTemplate GetOrCreateSpawnPoolTemplate(uint poolId)
+		{
+			NPCSpawnPoolTemplate templ;
+			if (poolId == 0)
+			{
+				// does not belong to any Pool
+				templ = new NPCSpawnPoolTemplate();
+				SpawnPoolTemplates.Add(templ.PoolId, templ);
+			}
+			else if (!SpawnPoolTemplates.TryGetValue(poolId, out templ))
+			{
+				// pool does not exist yet
+				var entry = SpawnMgr.GetSpawnPoolTemplateEntry(poolId);
+
+				if (entry != null)
+				{
+					// default pool
+					templ = new NPCSpawnPoolTemplate(entry);
+				}
+				else
+				{
+					// pool does not exist
+					//ContentMgr.OnInvalidDBData("");
+					templ = new NPCSpawnPoolTemplate();
+				}
+				SpawnPoolTemplates.Add(templ.PoolId, templ);
+			}
+			return templ;
 		}
 
 		public static List<NPCSpawnPoolTemplate> GetSpawnPoolTemplatesByMap(MapId map)
@@ -345,8 +379,6 @@ namespace WCell.RealmServer.NPCs
 		{
 			npc.EntityId = new EntityId(GenerateUniqueLowId(), npc.EntryId, highId);
 		}
-
-		#endregion
 
 		#region Apply
 		public static void Apply(this Action<NPCEntry> cb, params NPCId[] ids)
@@ -528,7 +560,6 @@ namespace WCell.RealmServer.NPCs
 			FactionMgr.Initialize();
 
 			ContentMgr.Load<NPCEquipmentEntry>();
-			ContentMgr.Load<NPCSpawnPoolTemplate>();
 			ContentMgr.Load<NPCEntry>();
 
 			EntriesLoaded = true;
@@ -586,7 +617,7 @@ namespace WCell.RealmServer.NPCs
 							if (pool.AutoSpawns)
 							{
 								var p = pool;			// wrap closure
-								map.ExecuteInContext(() => map.AddNPCSpawnPool(p));
+								map.ExecuteInContext(() => map.AddNPCSpawnPoolNow(p));
 							}
 						}
 					}
@@ -600,7 +631,6 @@ namespace WCell.RealmServer.NPCs
 			{
 				return;
 			}
-			ContentMgr.Load<NPCSpawnPoolTemplate>();
 			ContentMgr.Load<NPCSpawnEntry>();
 			SpawnsLoaded = true;
 		}
@@ -848,10 +878,10 @@ namespace WCell.RealmServer.NPCs
 		/// </summary>
 		public static NPCSpawnPoint SpawnClosestSpawnEntry(IWorldLocation pos)
 		{
-			var entry = GetClosesSpawnEntry(pos);
+			var entry = GetClosestSpawnEntry(pos);
 			if (entry != null)
 			{
-				var pool = pos.Map.AddNPCSpawnPool(entry.PoolTemplate);
+				var pool = pos.Map.AddNPCSpawnPoolNow(entry.PoolTemplate);
 				if (pool != null)
 				{
 					return pool.GetSpawnPoint(entry);
@@ -860,7 +890,7 @@ namespace WCell.RealmServer.NPCs
 			return null;
 		}
 
-		public static NPCSpawnEntry GetClosesSpawnEntry(IWorldLocation pos)
+		public static NPCSpawnEntry GetClosestSpawnEntry(IWorldLocation pos)
 		{
 			NPCSpawnEntry closest = null;
 			var distanceSq = Single.MaxValue;
@@ -874,6 +904,22 @@ namespace WCell.RealmServer.NPCs
 						distanceSq = distSq;
 						closest = entry;
 					}
+				}
+			}
+			return closest;
+		}
+
+		public static NPCSpawnEntry GetClosestSpawnEntry(this IEnumerable<NPCSpawnEntry> entries, IWorldLocation pos)
+		{
+			NPCSpawnEntry closest = null;
+			var distanceSq = Single.MaxValue;
+			foreach (var entry in entries)
+			{
+				var distSq = pos.Position.DistanceSquared(entry.Position);
+				if (distSq < distanceSq)
+				{
+					distanceSq = distSq;
+					closest = entry;
 				}
 			}
 			return closest;

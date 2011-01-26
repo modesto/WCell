@@ -1,7 +1,6 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using WCell.Constants.Updates;
 using WCell.RealmServer.Entities;
 using WCell.RealmServer.AI.Brains;
@@ -11,11 +10,18 @@ namespace WCell.RealmServer.AI.Groups
 	/// <summary>
 	/// 
 	/// </summary>
-	public class AIGroup : List<NPC>
+	public class AIGroup : IList<NPC>
 	{
 		private NPC m_Leader;
+		private readonly List<NPC> groupList;
 
-		public AIGroup(NPC leader = null)
+		public AIGroup()
+		{
+			groupList = new List<NPC>();
+		}
+
+		public AIGroup(NPC leader)
+			: this()
 		{
 			m_Leader = leader;
 			if (leader != null && !Contains(leader))
@@ -25,8 +31,8 @@ namespace WCell.RealmServer.AI.Groups
 		}
 
 		public AIGroup(IEnumerable<NPC> mobs)
-			: base(mobs)
 		{
+			groupList = new List<NPC>(mobs);
 		}
 
 		public NPC Leader
@@ -44,20 +50,6 @@ namespace WCell.RealmServer.AI.Groups
 			get { return UpdatePriority.Background; }
 		}
 
-		public void AddMob(NPC npc)
-		{
-			Add(npc);
-			npc.Group = this;
-		}
-
-		public void RemoveMob(NPC npc)
-		{
-			if (Remove(npc))
-			{
-				npc.Group = null;
-			}
-		}
-
 		public void Aggro(Unit unit)
 		{
 			foreach (var mob in this)
@@ -65,5 +57,111 @@ namespace WCell.RealmServer.AI.Groups
 				mob.ThreatCollection.AddNewIfNotExisted(unit);
 			}
 		}
+
+		#region Implementation of IEnumerable
+
+		public IEnumerator<NPC> GetEnumerator()
+		{
+			return groupList.GetEnumerator();
+		}
+
+		IEnumerator IEnumerable.GetEnumerator()
+		{
+			return GetEnumerator();
+		}
+
+		#endregion
+
+		#region Implementation of ICollection<NPC>
+
+		/// <summary>
+		/// Adds the given NPC to this group
+		/// </summary>
+		public void Add(NPC npc)
+		{
+			groupList.Add(npc);
+			npc.Group = this;
+			if (Leader == null)
+			{
+				m_Leader = npc;
+			}
+			else if (npc != Leader)
+			{
+				var mainTarget = Leader.ThreatCollection.CurrentAggressor;
+				if (mainTarget != null)
+				{
+					// double threat of leader's main target for the new NPC
+					npc.ThreatCollection[mainTarget] = 2 * npc.ThreatCollection[mainTarget] + 1;
+
+					// generate threat on all other enemies, too
+					foreach (var hostile in m_Leader.ThreatCollection)
+					{
+						npc.ThreatCollection.AddNewIfNotExisted(hostile.Key);
+					}
+				}
+			}
+		}
+
+		public void Clear()
+		{
+			groupList.Clear();
+		}
+
+		public bool Contains(NPC item)
+		{
+			return groupList.Contains(item);
+		}
+
+		void ICollection<NPC>.CopyTo(NPC[] array, int arrayIndex)
+		{
+			groupList.CopyTo(array, arrayIndex);
+		}
+
+		public bool Remove(NPC npc)
+		{
+			if (groupList.Remove(npc))
+			{
+				npc.Group = null;
+				return true;
+			}
+			return false;
+		}
+
+		public int Count
+		{
+			get { return groupList.Count; }
+		}
+
+		public bool IsReadOnly
+		{
+			get { return false; }
+		}
+
+		#endregion
+
+		#region Implementation of IList<NPC>
+
+		public int IndexOf(NPC item)
+		{
+			return groupList.IndexOf(item);
+		}
+
+		void IList<NPC>.Insert(int index, NPC item)
+		{
+			throw new NotImplementedException();
+		}
+
+		public void RemoveAt(int index)
+		{
+			groupList.RemoveAt(index);
+		}
+
+		public NPC this[int index]
+		{
+			get { return groupList[index]; }
+			set { groupList[index] = value; }
+		}
+
+		#endregion
 	}
 }

@@ -281,6 +281,30 @@ namespace WCell.RealmServer.Spells.Auras
 				return null;
 			}
 		}
+		/// <summary>
+		/// The SpellCast that caused this Aura (if still present)
+		/// </summary>
+		public SpellCast SpellCast
+		{
+			get
+			{
+				var channel = Controller as SpellChannel;
+				if (channel != null)
+				{
+					return channel.Cast;
+				}
+				else
+				{
+					var caster = CasterUnit;
+					if (caster != null)
+					{
+						return caster.SpellCast;
+					}
+				}
+
+				return null;
+			}
+		}
 
 		public Unit Owner
 		{
@@ -1051,9 +1075,7 @@ namespace WCell.RealmServer.Spells.Auras
 					{
 						// only trigger proc effects or all effects, if there arent any proc-specific effects
 						if (handler.CanProcBeTriggeredBy(action) &&
-								(!handler.SpellEffect.HasAffectMask ||
-								action.Spell == null ||
-								handler.SpellEffect.MatchesSpell(action.Spell)))
+							handler.SpellEffect.CanProcBeTriggeredBy(action.Spell))
 						{
 							// only trigger if no AffectMask or spell, or the trigger spell matches the affect mask
 							canProc = true;
@@ -1084,9 +1106,7 @@ namespace WCell.RealmServer.Spells.Auras
 					{
 						// only trigger proc effects or all effects, if there arent any proc-specific effects
 						if (handler.CanProcBeTriggeredBy(action) &&
-								(action.Spell == null ||
-								!handler.SpellEffect.HasAffectMask ||
-								handler.SpellEffect.MatchesSpell(action.Spell)))
+							handler.SpellEffect.CanProcBeTriggeredBy(action.Spell))
 						{
 							// only trigger if no AffectMask or spell, or the trigger spell matches the affect mask
 							handler.OnProc(triggerer, action);
