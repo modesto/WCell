@@ -184,7 +184,7 @@ namespace WCell.RealmServer.Items
 			slots[(int)InventorySlotType.Wrist] = new[] { EquipmentSlot.Wrist };
 
 			// special treatment
-			slots[(int)InventorySlotType.Ammo] = null;
+			slots[(int)InventorySlotType.Ammo] = null; // new[] { EquipmentSlot.Invalid };
 			return slots;
 		}
 
@@ -678,7 +678,7 @@ namespace WCell.RealmServer.Items
 
 				if (QuestMgr.Loaded)
 				{
-					EnsureQuestRelations();
+					EnsureItemQuestRelations();
 				}
 
 				RealmServer.InitMgr.SignalGlobalMgrReady(typeof(ItemMgr));
@@ -705,7 +705,7 @@ namespace WCell.RealmServer.Items
 			}
 		}
 
-		internal static void EnsureQuestRelations()
+		internal static void EnsureItemQuestRelations()
 		{
 			// Collect quests
 			foreach (var quest in QuestMgr.Templates)

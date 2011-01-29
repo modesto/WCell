@@ -1,6 +1,2 @@
-- fixed the bug where a spawn point does not stop spewing out new objects
-- fixed SpawnPoint to not respawn on it's own, but let the pool decide instead
-- added NPCEntry.Deleted event
-- fixed SpawnPools to not select SpawnPoints that have AutoSpawns set to false
-- resurrected NPCs are re-added into their pool's AIGroup
-- fixed up UtgardeKeep to keep track of dead skeletons
+- fixed it so that Item quest starters don't get added to the set of provided items for a quest
+- Item quest starters will now be removed from inventory when quest is completed
