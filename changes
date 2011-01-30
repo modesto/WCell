@@ -1,2 +1,1 @@
-- fixed it so that Item quest starters don't get added to the set of provided items for a quest
-- Item quest starters will now be removed from inventory when quest is completed
+- enabled SummonPet spells to also be casted by NPCs
