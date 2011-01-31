@@ -1,1 +1,4 @@
-- enabled SummonPet spells to also be casted by NPCs
+- fixed #npc spawn command
+- started adding SpellCast AI code, hopefully will finish tomorrow
+- added Phase property to IWorldLocation and updated all usages of it (since every location is uniquely determined by map, pos, phase)
+- restructured SpellCast PrePerform step
