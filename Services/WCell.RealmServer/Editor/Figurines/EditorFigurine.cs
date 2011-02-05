@@ -1,23 +1,21 @@
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using WCell.Constants;
 using WCell.Constants.Misc;
 using WCell.Constants.NPCs;
 using WCell.Constants.Updates;
-using WCell.Core.Network;
 using WCell.RealmServer.Entities;
 using WCell.RealmServer.Factions;
+using WCell.RealmServer.NPCs;
 using WCell.RealmServer.NPCs.Spawns;
 using WCell.Util.Variables;
 using WCell.Constants.Factions;
-using WCell.RealmServer.UpdateFields;
-using WCell.RealmServer.Gossips;
 
-namespace WCell.RealmServer.NPCs.Figurines
+namespace WCell.RealmServer.Editor.Figurines
 {
-	public abstract class Figurine : Unit
+	/// <summary>
+	/// These figurines represent the 3D GUI elements of the editor
+	/// </summary>
+	public abstract class EditorFigurine : Unit
 	{
 		/// <summary>
 		/// Whether to also spawn a DO to make this Figurine appear clearer
@@ -27,18 +25,21 @@ namespace WCell.RealmServer.NPCs.Figurines
 
 		protected readonly NPCEntry m_entry;
 
-	    protected Figurine(NPCEntry entry)
+		protected EditorFigurine(MapEditor editor, NPCEntry entry)
 		{
+			Editor = editor;
 			m_entry = entry;
 			GenerateId(m_entry.Id);
 			UnitFlags = UnitFlags.SelectableNotAttackable | UnitFlags.Possessed;
 			DynamicFlags = UnitDynamicFlags.TrackUnit;
 			EmoteState = EmoteType.StateDead;
 			NPCFlags |= NPCFlags.Gossip;
-	    	Model = m_entry.GetRandomModel();
+			Model = m_entry.GetRandomModel();
 			EntryId = m_entry.Id;
 
-			var speed = 10f;
+			// speed must be > 0
+			// because of the way the client works
+			const float speed = 1f;
 			m_runSpeed = speed;
 			m_swimSpeed = speed;
 			m_swimBackSpeed = speed;
@@ -56,6 +57,8 @@ namespace WCell.RealmServer.NPCs.Figurines
 
 			IsEvading = true;
 		}
+
+		public MapEditor Editor { get; private set; }
 
 		public virtual float DefaultScale
 		{
@@ -103,6 +106,19 @@ namespace WCell.RealmServer.NPCs.Figurines
 		{
 			get { return Faction != null ? Faction.Id : FactionId.None; }
 			set { }
+		}
+
+		/// <summary>
+		/// Editor is only visible to staff members
+		/// </summary>
+		public override VisibilityStatus DetermineVisibilityOf(WorldObject obj)
+		{
+			if (obj is Character && Editor.Team.Contains((Character)obj))
+			{
+				// only those who are currently editing the map can see the figurines
+				return VisibilityStatus.Visible;
+			}
+			return VisibilityStatus.Invisible;
 		}
 
 		public override void Dispose(bool disposing)

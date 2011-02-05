@@ -1,2 +1,3 @@
-- fixed: Auras of different spells but same group will now correctly replace each other
-- fixed: Only apply highest ranks of loaded passive talents
+- a little work on map editing
+- fixed the #spell g command to not require a target anymore
+- fixed aura applications

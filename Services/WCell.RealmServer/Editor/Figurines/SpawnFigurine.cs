@@ -1,22 +1,14 @@
-using WCell.Constants;
-using WCell.Constants.Factions;
 using WCell.Constants.NPCs;
-using WCell.Constants.Spells;
-using WCell.Constants.Updates;
-using WCell.Core.Network;
-using WCell.RealmServer.Entities;
 using WCell.RealmServer.Factions;
 using WCell.RealmServer.NPCs.Spawns;
-using WCell.RealmServer.UpdateFields;
 using WCell.Util.Variables;
-using System.Collections.Generic;
 
-namespace WCell.RealmServer.NPCs.Figurines
+namespace WCell.RealmServer.Editor.Figurines
 {
 	/// <summary>
 	/// The visual component of a spawnpoint
 	/// </summary>
-	public class SpawnFigurine : Figurine
+	public class SpawnFigurine : EditorFigurine
 	{
 		/// <summary>
 		/// Scales the figurine in relation to its original version
@@ -32,8 +24,8 @@ namespace WCell.RealmServer.NPCs.Figurines
 
 		private readonly NPCSpawnPoint m_SpawnPoint;
 
-		public SpawnFigurine(NPCSpawnPoint spawnPoint)
-			: base(spawnPoint.SpawnEntry.Entry)
+		public SpawnFigurine(MapEditor editor, NPCSpawnPoint spawnPoint)
+			: base(editor, spawnPoint.SpawnEntry.Entry)
 		{
 			m_SpawnPoint = spawnPoint;
 			m_position = spawnPoint.SpawnEntry.Position;

@@ -1,7 +1,6 @@
 using WCell.RealmServer.Gossips;
-using WCell.RealmServer.NPCs;
 
-namespace WCell.Addons.Default.Editor
+namespace WCell.RealmServer.Editor
 {
 	/// <summary>
 	/// The GossipMenu used to customize SpawnPoints
