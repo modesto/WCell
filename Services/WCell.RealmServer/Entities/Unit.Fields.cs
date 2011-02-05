@@ -145,6 +145,11 @@ namespace WCell.RealmServer.Entities
 					if (value != null)
 					{
 						SetEntityId(UnitFields.TARGET, value.EntityId);
+						if (this is NPC)
+						{
+							// turn towards it (since thats the way it's seen anyway)
+							Orientation = GetAngleTowards(value);
+						}
 					}
 					else
 					{
@@ -157,6 +162,9 @@ namespace WCell.RealmServer.Entities
 			}
 		}
 
+		/// <summary>
+		/// As long as this count is up, cannot leave combat
+		/// </summary>
 		public int NPCAttackerCount
 		{
 			get;

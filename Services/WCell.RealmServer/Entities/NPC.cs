@@ -486,6 +486,11 @@ namespace WCell.RealmServer.Entities
 			get { return m_spawnPoint; }
 		}
 
+		public NPCSpawnEntry SpawnEntry
+		{
+			get { return m_spawnPoint != null ? m_spawnPoint.SpawnEntry : null; }
+		}
+
 		public override LinkedList<WaypointEntry> Waypoints
 		{
 			get
@@ -909,7 +914,6 @@ namespace WCell.RealmServer.Entities
 			// trigger events
 			if (m_brain != null)
 			{
-				//spawn.Brain.MovementAI.SetSpawnPoint(pos);
 				m_brain.OnActivate();
 			}
 			m_entry.NotifyActivated(this);
@@ -929,6 +933,7 @@ namespace WCell.RealmServer.Entities
 				{
 					// master already gone
 					Delete();
+					return;
 				}
 			}
 		}
@@ -1355,6 +1360,11 @@ namespace WCell.RealmServer.Entities
 		public bool CanGiveQuestTo(Character chr)
 		{
 			return CheckVendorInteraction(chr);
+		}
+
+		public void OnQuestGiverStatusQuery(Character chr)
+		{
+			// do nothing
 		}
 		#endregion
 

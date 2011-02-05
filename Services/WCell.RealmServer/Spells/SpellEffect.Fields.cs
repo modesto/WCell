@@ -19,6 +19,7 @@ using WCell.Constants;
 using WCell.Constants.Spells;
 using WCell.RealmServer.Content;
 using WCell.RealmServer.Spells.Auras;
+using WCell.RealmServer.Spells.Targeting;
 using WCell.Util.Data;
 
 namespace WCell.RealmServer.Spells
@@ -188,11 +189,67 @@ namespace WCell.RealmServer.Spells
 		/// If not it uses this Effect's original value.
 		/// </summary>
 		public SpellEffect EffectValueOverrideEffect;
+		#endregion
+
+		#region Targeting
+		/// <summary>
+		/// Used to determine the targets for this effect
+		/// </summary>
+		public TargetDefinition CustomTargetHandlerDefintion;
 
 		/// <summary>
-		/// Used to determine the targets for this effect when casted by an AI caster
+		/// Used only by AI to determine targets
 		/// </summary>
-		public AISpellCastTargetType AISpellCastTargetType = AISpellCastTargetType.Default;
+		public TargetDefinition AITargetHandlerDefintion;
+
+		/// <summary>
+		/// Evaluates targets for non-AI spell casts
+		/// </summary>
+		public TargetEvaluator CustomTargetEvaluator;
+
+		/// <summary>
+		/// Evaluates targets for AI spell casts
+		/// </summary>
+		public TargetEvaluator AITargetEvaluator;
+
+
+		public TargetDefinition GetTargetDefinition(bool isAiCast)
+		{
+			return isAiCast && CustomTargetHandlerDefintion == null ? AITargetHandlerDefintion : CustomTargetHandlerDefintion;
+		}
+
+		public TargetEvaluator GetTargetEvaluator(bool isAiCast)
+		{
+			return isAiCast && CustomTargetEvaluator == null ? AITargetEvaluator : CustomTargetEvaluator;
+		}
+
+		public void SetCustomTargetDefinition(TargetAdder adder, params TargetFilter[] filters)
+		{
+			CustomTargetHandlerDefintion = new TargetDefinition(adder, filters);
+		}
+
+		public void SetCustomTargetDefinition(TargetAdder adder, TargetEvaluator eval, params TargetFilter[] filters)
+		{
+			CustomTargetHandlerDefintion = new TargetDefinition(adder, filters);
+			if (eval != null)
+			{
+				CustomTargetEvaluator = eval;
+			}
+		}
+
+		public void SetAITargetDefinition(TargetAdder adder, params TargetFilter[] filters)
+		{
+			AITargetHandlerDefintion = new TargetDefinition(adder, filters);
+		}
+
+		public void SetAITargetDefinition(TargetAdder adder, TargetEvaluator eval, params TargetFilter[] filters)
+		{
+			AITargetHandlerDefintion = new TargetDefinition(adder, filters);
+			if (eval != null)
+			{
+				CustomTargetEvaluator = eval;
+			}
+		}
 		#endregion
 
 		#region Auto generated Fields

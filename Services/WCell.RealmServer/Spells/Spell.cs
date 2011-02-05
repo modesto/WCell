@@ -28,6 +28,7 @@ using WCell.RealmServer.Entities;
 using WCell.RealmServer.Misc;
 using WCell.RealmServer.Modifiers;
 using WCell.RealmServer.Spells.Auras;
+using WCell.RealmServer.Spells.Targeting;
 using WCell.Util;
 using WCell.Util.Data;
 using System.Text.RegularExpressions;
@@ -531,6 +532,80 @@ namespace WCell.RealmServer.Spells
 			}
 
 			AISettings.InitializeAfterLoad();
+		}
+		#endregion
+
+		#region Targeting
+		/// <summary>
+		/// Sets the AITargetHandlerDefintion of all effects
+		/// </summary>
+		public void OverrideCustomTargetDefinitions(TargetAdder adder, params TargetFilter[] filters)
+		{
+			OverrideCustomTargetDefinitions(new TargetDefinition(adder, filters));
+		}
+
+		/// <summary>
+		/// Sets the CustomTargetHandlerDefintion of all effects
+		/// </summary>
+		public void OverrideCustomTargetDefinitions(TargetAdder adder, TargetEvaluator evaluator = null, 
+			params TargetFilter[] filters)
+		{
+			OverrideCustomTargetDefinitions(new TargetDefinition(adder, filters), evaluator);
+		}
+
+		public void OverrideCustomTargetDefinitions(TargetDefinition def, TargetEvaluator evaluator = null)
+		{
+			ForeachEffect(
+				effect => effect.CustomTargetHandlerDefintion = def);
+			if (evaluator != null)
+			{
+				OverrideCustomTargetEvaluators(evaluator);
+			}
+		}
+
+		/// <summary>
+		/// Sets the AITargetHandlerDefintion of all effects
+		/// </summary>
+		public void OverrideAITargetDefinitions(TargetAdder adder, params TargetFilter[] filters)
+		{
+			OverrideAITargetDefinitions(new TargetDefinition(adder, filters));
+		}
+
+		/// <summary>
+		/// Sets the AITargetHandlerDefintion of all effects
+		/// </summary>
+		public void OverrideAITargetDefinitions(TargetAdder adder, TargetEvaluator evaluator = null,
+			params TargetFilter[] filters)
+		{
+			OverrideAITargetDefinitions(new TargetDefinition(adder, filters), evaluator);
+		}
+
+		public void OverrideAITargetDefinitions(TargetDefinition def, TargetEvaluator evaluator = null)
+		{
+			ForeachEffect(
+				effect => effect.AITargetHandlerDefintion = def);
+			if (evaluator != null)
+			{
+				OverrideCustomTargetEvaluators(evaluator);
+			}
+		}
+
+		/// <summary>
+		/// Sets the CustomTargetEvaluator of all effects
+		/// </summary>
+		public void OverrideCustomTargetEvaluators(TargetEvaluator eval)
+		{
+			ForeachEffect(
+				effect => effect.CustomTargetEvaluator = eval);
+		}
+
+		/// <summary>
+		/// Sets the AITargetEvaluator of all effects
+		/// </summary>
+		public void OverrideAITargetEvaluators(TargetEvaluator eval)
+		{
+			ForeachEffect(
+				effect => effect.AITargetEvaluator = eval);
 		}
 
 		#endregion

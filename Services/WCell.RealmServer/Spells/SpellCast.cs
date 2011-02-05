@@ -22,6 +22,7 @@ using NLog;
 using WCell.Constants;
 using WCell.Constants.Pets;
 using WCell.Constants.Spells;
+using WCell.Constants.World;
 using WCell.Util.Graphics;
 using WCell.Util.Threading;
 using WCell.Core.Timers;
@@ -40,7 +41,7 @@ namespace WCell.RealmServer.Spells
 	/// <summary>
 	/// Represents the progress of any Spell-casting
 	/// </summary>
-	public partial class SpellCast : IUpdatable
+	public partial class SpellCast : IUpdatable, IWorldLocation
 	{
 		public static int PushbackDelay = 500;
 		public static int ChannelPushbackFraction = 4;
@@ -134,6 +135,22 @@ namespace WCell.RealmServer.Spells
 		}
 
 		/// <summary>
+		/// Needed for IWorldLocation interface
+		/// </summary>
+		public Vector3 Position
+		{
+			get { return SourceLoc; }
+		}
+
+		/// <summary>
+		/// Needed for IWorldLocation interface
+		/// </summary>
+		public MapId MapId
+		{
+			get { return Map.MapId; }
+		}
+
+		/// <summary>
 		/// The context to which the SpellCast belongs
 		/// </summary>
 		public IContextHandler Context
@@ -193,6 +210,7 @@ namespace WCell.RealmServer.Spells
 		/// The source location for a spell which has been sent by the player
 		/// </summary>
 		public Vector3 SourceLoc;
+
 
 		public string StringTarget;
 
@@ -312,11 +330,11 @@ namespace WCell.RealmServer.Spells
 		}
 
 		/// <summary>
-		/// Whether the was SpellCast was started by an AI-controlled Unit
+		/// Whether the SpellCast was started by an AI-controlled Unit
 		/// </summary>
 		public bool IsAICast
 		{
-			get { return !isPlayerCast && CasterUnit != null; }
+			get { return !isPlayerCast && CasterObject is Unit && !IsPassive; }
 		}
 
 		public bool UsesRunes
@@ -820,7 +838,14 @@ namespace WCell.RealmServer.Spells
 
 			m_spell = spell;
 			m_passiveCast = passiveCast;
-			m_initialTargets = initialTargets;
+			if (initialTargets == null || initialTargets.Length == 0)
+			{
+				m_initialTargets = null;
+			}
+			else
+			{
+				m_initialTargets = initialTargets;
+			}
 
 			var reason = Prepare();
 			if (reason == SpellFailedReason.Ok)
@@ -873,7 +898,7 @@ namespace WCell.RealmServer.Spells
 				// Let AI caster prepare targets and only cast, if valid targets were found
 				if (IsAICast)
 				{
-					var err = PrepareAI(this);
+					var err = PrepareAI();
 					if (err != SpellFailedReason.Ok)
 					{
 						Cancel(err);

@@ -10,6 +10,9 @@ using WCell.Util.Graphics;
 
 namespace WCell.RealmServer.Spawns
 {
+	/// <summary>
+	/// Instance of SpawnEntry objects
+	/// </summary>
 	public abstract class SpawnPoint<T, E, O, POINT, POOL>
 		where T : SpawnPoolTemplate<T, E, O, POINT, POOL>
 		where E : SpawnEntry<T, E, O, POINT, POOL>
@@ -99,6 +102,12 @@ namespace WCell.RealmServer.Spawns
 		}
 		#endregion
 
+		public void Respawn()
+		{
+			Disable();
+			SpawnNow();
+		}
+
 		private void SpawnNow(int dt)
 		{
 			SpawnNow();
@@ -138,7 +147,17 @@ namespace WCell.RealmServer.Spawns
 		public void StopTimer()
 		{
 			m_timer.Stop();
-			Map.UnregisterUpdatable(m_timer);
+			Map.UnregisterUpdatableLater(m_timer);
+		}
+
+		public void RemoveSpawnedObject()
+		{
+			// thread-safety -> Get local reference
+			var spawnling = m_spawnling;
+			if (spawnling != null)
+			{
+				spawnling.Delete();
+			}
 		}
 
 		/// <summary>
@@ -147,10 +166,7 @@ namespace WCell.RealmServer.Spawns
 		public void Disable()
 		{
 			StopTimer();
-			if (HasSpawned)
-			{
-				m_spawnling.Delete();
-			}
+			RemoveSpawnedObject();
 		}
 
 		/// <summary>
@@ -171,7 +187,7 @@ namespace WCell.RealmServer.Spawns
 			m_spawnling = null;
 			Pool.SpawnedObjects.Remove(obj);
 
-			if (m_spawnEntry.AutoSpawns)
+			if (Pool.IsActive && m_spawnEntry.AutoSpawns)
 			{
 				// select a spawn to respawn
 				Pool.SpawnOneLater();

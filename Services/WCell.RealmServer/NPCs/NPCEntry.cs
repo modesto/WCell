@@ -142,11 +142,6 @@ namespace WCell.RealmServer.NPCs
 		/// </summary>
 		public NPCSpawnTypeHandler[] SpawnTypeHandlers;
 
-		public uint NameGossipId;
-
-		[NotPersistent]
-		public GossipMenu DefaultGossip { get; set; }
-
 		public bool IsVendor
 		{
 			get { return VendorItems != null; }
@@ -181,19 +176,26 @@ namespace WCell.RealmServer.NPCs
 		/// </summary>
 		public NPCEntry GetEntry(uint difficultyIndex)
 		{
-			if (difficultyIndex != 0)
+			var id = DifficultyOverrideEntryIds.Get(difficultyIndex);
+			if (id != 0)
 			{
-				var id = DifficultyOverrideEntryIds.Get(difficultyIndex - 1);
-				if (id != 0)
+				var entry = NPCMgr.GetEntry(id);
+				if (entry != null)
 				{
-					var entry = NPCMgr.GetEntry(id);
-					if (entry != null)
-					{
-						return entry;
-					}
+					return entry;
 				}
 			}
 			return this;
+		}
+
+		public MapTemplate GetMapTemplate()
+		{
+			var spawn = SpawnEntries.FirstOrDefault();
+			if (spawn != null)
+			{
+				return World.GetMapTemplate(spawn.MapId);
+			}
+			return null;
 		}
 		#endregion
 
@@ -751,10 +753,6 @@ namespace WCell.RealmServer.NPCs
 				IsIdle = true;
 			}
 
-			const uint gossipStartId = 200231u; // random fixed Id
-			NameGossipId = gossipStartId + Id;
-			new GossipEntry(NameGossipId, DefaultName + " (" + Id + ")");		// entry adds itself to GossipMgr
-
 			if (Resistances == null)
 			{
 				Resistances = new int[ItemConstants.MaxResCount];
@@ -881,7 +879,7 @@ namespace WCell.RealmServer.NPCs
 		[NotPersistent]
 		public NPCCreator NPCCreator;
 
-		public NPC Create(uint difficulty = 0u)
+		public NPC Create(uint difficulty = uint.MaxValue)
 		{
 			var npc = NPCCreator(GetEntry(difficulty));
 			npc.SetupNPC(this, null);
@@ -895,10 +893,10 @@ namespace WCell.RealmServer.NPCs
 			return npc;
 		}
 
-		public NPC SpawnAt(Map rgn, Vector3 pos)
+		public NPC SpawnAt(Map map, Vector3 pos)
 		{
-			var npc = Create(rgn.DifficultyIndex);
-			rgn.AddObject(npc, pos);
+			var npc = Create(map.DifficultyIndex);
+			map.AddObject(npc, pos);
 			return npc;
 		}
 
@@ -1088,6 +1086,30 @@ namespace WCell.RealmServer.NPCs
 			if (Equipment != null)
 			{
 				writer.WriteLine("Equipment: {0}", Equipment.ItemIds.Where(id => id != 0).ToString(", "));
+			}
+
+			if (DifficultyOverrideEntryIds != null && DifficultyOverrideEntryIds.Any(id => id != 0))
+			{
+				var parts = new List<string>(4);
+				for (var i = 0u; i < 3; i++)
+				{
+					var id = DifficultyOverrideEntryIds[i];
+					if (id != 0)
+					{
+						var entry = NPCMgr.GetEntry(id);
+						MapTemplate map;
+						MapDifficultyEntry diff;
+						if (entry != null && (map = GetMapTemplate()) != null && (diff = map.GetDifficulty(i)) != null)
+						{
+							parts.Add(string.Format("{0} ({1}) = " + id + " (" + (uint)id + ")", diff.IsHeroic ? "Heroic" : "Normal", diff.MaxPlayerCount));
+						}
+						else
+						{
+							parts.Add("(unknown difficulty) = " + id + " (" + (uint) id + ")");
+						}
+					}
+				}
+				writer.WriteLine("DifficultyOverrides: {0}", parts.ToString("; "));
 			}
 			//if (inclFaction)	
 			//{

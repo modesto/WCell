@@ -12,6 +12,7 @@ using WCell.Constants;
 using WCell.Constants.GameObjects;
 using WCell.RealmServer.AI.Actions.Combat;
 using System;
+using WCell.RealmServer.Spells.Targeting;
 using WCell.Util.Graphics;
 
 
@@ -69,10 +70,24 @@ namespace WCell.Addons.Default.Instances
 			public static void InitLadySpells()
 			{
 				var forkedLightning = SpellHandler.Get(SpellId.ForkedLightningRank1);
-				forkedLightning.AISettings.SetValues(8000, AISpellCastTargetType.RandomHostilePlayer);
+				forkedLightning.AISettings.SetCooldownRange(8000);
+
+				// is this correct? shouldn't it be AoE? that spell only does 5 damage
+				// in that case it should not have a custom target definition, but stick with the default one
+				forkedLightning.MaxTargets = 1;
+				forkedLightning.OverrideAITargetDefinitions(
+					DefaultTargetAdders.AddAreaSource, 									// Adder
+					DefaultTargetEvaluators.RandomEvaluator, 							// Evaluator
+					DefaultTargetFilters.IsHostile, DefaultTargetFilters.IsPlayer);		// Filters
 
 				var slow = SpellHandler.Get(SpellId.SlowRank1);
-				slow.AISettings.SetValues(13000, AISpellCastTargetType.RandomHostilePlayer);
+				slow.AISettings.SetCooldownRange(13000);
+				slow.MaxTargets = 1;
+				slow.OverrideAITargetDefinitions(
+					DefaultTargetAdders.AddAreaSource, 									// Adder
+					DefaultTargetEvaluators.RandomEvaluator, 							// Evaluator
+					DefaultTargetFilters.IsHostile, DefaultTargetFilters.IsPlayer);		// Filters
+
 
 				var frostNova = SpellHandler.Get(SpellId.ClassSkillFrostNovaRank2);
 				frostNova.AISettings.SetCooldown(20000);
@@ -95,7 +110,12 @@ namespace WCell.Addons.Default.Instances
 			public static void InitGelihast()
 			{
 				var net = SpellHandler.Get(SpellId.Net);
-				net.AISettings.SetValues(3000, AISpellCastTargetType.RandomHostilePlayer);
+				net.AISettings.SetCooldownRange(3000);
+				net.MaxTargets = 1;
+				net.OverrideAITargetDefinitions(
+					DefaultTargetAdders.AddAreaSource, 									// Adder
+					DefaultTargetEvaluators.RandomEvaluator, 							// Evaluator
+					DefaultTargetFilters.IsHostile, DefaultTargetFilters.IsPlayer);		// Filters
 			}
 
 			public GelihastAttackAction(NPC Gelihast)

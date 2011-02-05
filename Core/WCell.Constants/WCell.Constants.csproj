@@ -157,6 +157,8 @@
     <Compile Include="Chat\TextEmote.cs" />
     <Compile Include="Externals.cs" />
     <Compile Include="Factions\Extensions.cs" />
+    <Compile Include="GameObjects\GOConstantsExtensions.cs" />
+    <Compile Include="GameObjects\GODynamicFlags.cs" />
     <Compile Include="GameObjects\GOMisc.cs" />
     <Compile Include="Groups.cs" />
     <Compile Include="Guilds\Extensions.cs" />
@@ -237,6 +239,7 @@
     <Compile Include="Skills\SkillTierId.cs" />
     <Compile Include="Spells\AuraType.cs" />
     <Compile Include="Spells\Constants.Spells.cs" />
+    <Compile Include="Spells\ImplicitSpellTargetType.cs" />
     <Compile Include="Spells\SpellConstantsExtensions.cs" />
     <Compile Include="Spells\ProcTriggerFlags.cs" />
     <Compile Include="Spells\Range.cs" />

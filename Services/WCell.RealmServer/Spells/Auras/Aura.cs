@@ -129,13 +129,12 @@ namespace WCell.RealmServer.Spells.Auras
 			SetupTimer();
 		}
 
+		/// <summary>
+		/// Called after setting up the Aura and before calling Start()
+		/// </summary>
 		private void SetupTimer()
 		{
-			if (m_amplitude == 0 && m_duration < int.MaxValue)
-			{
-				m_amplitude = m_duration;
-			}
-			if (m_amplitude > 0 && m_controller == null)
+			if (m_controller == null && (m_amplitude > 0 || m_duration < int.MaxValue))
 			{
 				// Aura times itself
 				m_timer = new TimerEntry
@@ -236,7 +235,7 @@ namespace WCell.RealmServer.Spells.Auras
 			protected internal set;
 		}
 
-		public bool CanBeCancelled
+		public bool CanBeRemoved
 		{
 			get
 			{
@@ -395,32 +394,38 @@ namespace WCell.RealmServer.Spells.Auras
 					m_startTime = Environment.TickCount;
 
 					int time;
-					if (value < 0)
+
+					// normal timeout
+					if (m_amplitude > 0)
 					{
-						m_maxTicks = int.MaxValue;
+						// periodic
+
+						// no timeout -> infinitely many ticks
+						if (value < 0)
+						{
+							m_maxTicks = int.MaxValue;
+						}
+						else
+						{
+							m_maxTicks = value / m_amplitude;
+
+							if (m_maxTicks < 1)
+							{
+								m_maxTicks = 1;
+							}
+						}
 						time = value % (m_amplitude + 1);
 					}
 					else
 					{
-						if (m_amplitude > 0)
-						{
-							m_maxTicks = value / m_amplitude;
-							time = value % (m_amplitude + 1);
-						}
-						else
-						{
-							time = value;
-						}
-
-						if (m_maxTicks < 1)
-						{
-							m_amplitude = value;
-							m_maxTicks = 1;
-						}
+						// modal aura (either on or off)
+						time = value;
+						m_maxTicks = 1;
 					}
 
 					m_ticks = 0;
 
+					m_duration = time;
 					m_timer.Start(time);
 				}
 			}
@@ -830,6 +835,71 @@ namespace WCell.RealmServer.Spells.Auras
 				}
 			}
 		}
+
+		public enum AuraOverrideStatus
+		{
+			/// <summary>
+			/// Aura does not exist
+			/// </summary>
+			NotPresent,
+
+			/// <summary>
+			/// Aura can be overridden (if the previous Aura can be removed)
+			/// </summary>
+			Replace,
+
+			/// <summary>
+			/// 
+			/// </summary>
+			Refresh,
+			Bounced
+		}
+
+		/// <summary>
+		/// Stack or removes the given Aura, if possible.
+		/// Returns whether the given incompatible Aura was removed or stacked.
+		/// <param name="err">Ok, if stacked or no incompatible Aura was found</param>
+		/// </summary>
+		public AuraOverrideStatus GetOverrideStatus(ObjectReference caster, Spell spell)
+		{
+			if (Spell.IsPreventionDebuff)
+			{
+				return AuraOverrideStatus.Bounced;
+			}
+
+			if (Spell == spell)
+			{
+				// same spell can always be refreshed
+				return AuraOverrideStatus.Refresh;
+			}
+			else
+			{
+				if (caster == CasterReference)
+				{
+					if (spell != Spell
+						//&&
+						//spell.AuraCasterGroup != null &&
+						//spell.AuraCasterGroup == Spell.AuraCasterGroup &&
+						//spell.AuraCasterGroup.MaxCount == 1
+						)
+					{
+						// different spell -> needs to be overridden
+						return AuraOverrideStatus.Replace;
+					}
+					else
+					{
+						// Aura can be refreshed
+						return AuraOverrideStatus.Refresh;
+					}
+				}
+				else if (!spell.CanOverride(Spell))
+				{
+					return AuraOverrideStatus.Bounced;
+				}
+
+				return AuraOverrideStatus.Refresh;
+			}
+		}
 		#endregion
 
 		#region Remove & Cancel
@@ -850,14 +920,6 @@ namespace WCell.RealmServer.Spells.Auras
 			}
 		}
 
-		/// <summary>
-		/// Cancels and removes this Aura
-		/// </summary>
-		public void Cancel()
-		{
-			Remove(true);
-		}
-
 		public bool TryRemove(bool cancelled)
 		{
 			if (m_spell.IsAreaAura)
@@ -866,7 +928,8 @@ namespace WCell.RealmServer.Spells.Auras
 				var owner = m_auras.Owner;
 				if (owner.EntityId.Low == CasterReference.EntityId || CasterUnit == null || CasterUnit.UnitMaster == owner)
 				{
-					return owner.CancelAreaAura(m_spell);
+					owner.CancelAreaAura(m_spell);
+					return true;
 				}
 			}
 			else
@@ -875,6 +938,11 @@ namespace WCell.RealmServer.Spells.Auras
 				return true;
 			}
 			return false;
+		}
+
+		public void Cancel()
+		{
+			Remove();
 		}
 
 		internal void RemoveWithoutCleanup()
@@ -896,7 +964,7 @@ namespace WCell.RealmServer.Spells.Auras
 		/// <summary>
 		/// Removes this Aura from the player
 		/// </summary>
-		public void Remove(bool cancelled)
+		public void Remove(bool cancelled = true)
 		{
 			if (IsAdded)
 			{
