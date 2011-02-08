@@ -1,4 +1,5 @@
-- first version of the map/spawn editor system is out (still missing most stuff) - type: #edit
-- many small additions to the gossip system
-- added Character.ResetOwnWorld and InvalidateKnowledgeOf methods
-- GO's now get their owner's level
+- fixed: login with enchanted items / PlayerInventory.GetEnumerator / display of damages in paperdoll / CanMelee logic
+- fixed: talent cooldown modifiers now also apply to category cds / talent range modifiers are now also properly applied
+- fixed: spell some incompatible spell targeting settings, causing some totems to fail
+- removed the combat deactivation delay
+- removed NPC level up animations when spawned by players

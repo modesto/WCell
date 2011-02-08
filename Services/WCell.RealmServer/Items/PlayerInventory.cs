@@ -562,12 +562,10 @@ namespace WCell.RealmServer.Items
 		/// <summary>
 		/// Called whenever the Player receives a new Item
 		/// </summary>
-		internal void OnAdd(Item item)
+		internal void OnNewStack(Item item)
 		{
 			item.m_owner = m_owner;
 			OnAddDontNotify(item);
-			// notify about new item
-
 		}
 
 		internal void OnAddDontNotify(Item item)
@@ -2394,7 +2392,7 @@ namespace WCell.RealmServer.Items
 		/// </summary>
 		/// <param name="cats"></param>
 		/// <returns></returns>
-		public bool CheckTotemCategories(TotemCategory[] cats)
+		public bool CheckTotemCategories(ToolCategory[] cats)
 		{
 			for (var i = 0; i < cats.Length; i++)
 			{
@@ -2408,7 +2406,7 @@ namespace WCell.RealmServer.Items
 					{
 						var slot = slots[j];
 						var item = this[slot];
-						if (item != null && item.Template.TotemCategory == cat)
+						if (item != null && item.Template.ToolCategory == cat)
 						{
 							found = true;
 							break;
@@ -2418,11 +2416,11 @@ namespace WCell.RealmServer.Items
 				else
 				{
 					// unequippable tools
-					if (this[EquipmentSlot.MainHand] == null || this[EquipmentSlot.MainHand].Template.TotemCategory != cat)
+					if (this[EquipmentSlot.MainHand] == null || this[EquipmentSlot.MainHand].Template.ToolCategory != cat)
 					{
 						found = !Iterate(item =>
 						{
-							if (item.Template.TotemCategory == cat)
+							if (item.Template.ToolCategory == cat)
 							{
 								return false;
 							}
@@ -2572,6 +2570,8 @@ namespace WCell.RealmServer.Items
 		{
 			foreach (var item in m_Items)
 			{
+				if (item == null) continue;
+
 				yield return item;
 				if (!item.IsContainer) continue;
 

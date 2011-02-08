@@ -133,6 +133,9 @@ namespace WCell.RealmServer.Editor
 		{
 			Team.Remove(chr.EntityId.Low);
 			chr.RemoveUpdateAction(UpdateCallback);
+
+			// hide all figurines
+			chr.ResetOwnWorld();
 		}
 
 		/// <summary>
@@ -160,12 +163,6 @@ namespace WCell.RealmServer.Editor
 				{
 					// selected new target
 				}
-			}
-
-			if (target != null && chr.GossipConversation == null)
-			{
-				// show the editing menu
-				chr.StartGossip(target.GetOrCreateEditorMenu());
 			}
 		}
 	}

@@ -349,7 +349,7 @@ namespace WCell.RealmServer.Entities
 		/// </summary>
 		void BecomeGhost()
 		{
-			SpellCast.Start(SpellHandler.Get(SpellId.Ghost), true, this);
+			SpellCast.Start(SpellHandler.Get(SpellId.Ghost_2), true, this);
 		}
 
 		/// <summary>
@@ -1126,7 +1126,6 @@ namespace WCell.RealmServer.Entities
 			{
 				if (NPCAttackerCount == 0 &&
 					(m_activePet == null || m_activePet.NPCAttackerCount == 0) &&
-					(Environment.TickCount - m_lastCombatTime) >= CombatDeactivationDelay &&
 					!m_auras.HasHarmfulAura())
 				{
 					if (m_minions != null)
