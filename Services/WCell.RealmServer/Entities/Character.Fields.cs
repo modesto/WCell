@@ -184,6 +184,8 @@ namespace WCell.RealmServer.Entities
 		private ExtraInfo m_ExtraInfo;
 
 		protected TradeWindow m_tradeWindow;
+
+		protected DateTime m_lastPvPUpdateTime;
 		#endregion
 
 		/// <summary>
@@ -757,7 +759,7 @@ namespace WCell.RealmServer.Entities
 		public uint BlockValue
 		{
 			get { return GetUInt32(PlayerFields.SHIELD_BLOCK); }
-			set { SetUInt32(PlayerFields.SHIELD_BLOCK, value); }
+			internal set { SetUInt32(PlayerFields.SHIELD_BLOCK, value); }
 		}
 
 		/// <summary>
