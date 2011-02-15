@@ -248,6 +248,8 @@ namespace WCell.RealmServer.Entities
 				InitImmovable();
 			}
 			Level = entry.GetRandomLevel();
+
+			AddMessage(UpdateSpellRanks);
 		}
 
 		/// <summary>
@@ -1468,7 +1470,7 @@ namespace WCell.RealmServer.Entities
 
 		public override int GetBasePowerRegen()
 		{
-			if (IsOwnedByPlayer)
+			if (IsPlayerOwned)
 			{
 				return RegenerationFormulas.GetPowerRegen(this);
 			}
