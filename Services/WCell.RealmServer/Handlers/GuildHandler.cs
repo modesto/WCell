@@ -1399,6 +1399,11 @@ namespace WCell.RealmServer.Handlers
 				}
 
 				var bankTab = gBank[tabId];
+                if (bankTab == null)
+                {
+                    chr.Client.Send(packet);
+                    return;
+                }
 				for (var slot = 0; slot < GuildMgr.MAX_BANK_TAB_SLOTS; ++slot)
 				{
 					var item = (slot < bankTab.ItemRecords.Count) ? bankTab.ItemRecords[slot] : null;
@@ -1488,6 +1493,8 @@ namespace WCell.RealmServer.Handlers
 
 		public static void SendGuildBankLog(Character chr, GuildBankLog log, byte tabId)
 		{
+            if (log == null)
+                return;
 			using (var packet = new RealmPacketOut(RealmServerOpCode.MSG_GUILD_BANK_LOG_QUERY))
 			{
 				var entries = log.GetBankLogEntries(tabId);
