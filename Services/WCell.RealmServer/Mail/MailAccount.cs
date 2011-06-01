@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using NLog;
 using WCell.Constants;
+using WCell.Constants.Achievements;
 using WCell.Constants.Factions;
 using WCell.Constants.Items;
 using WCell.Core;
@@ -169,29 +170,35 @@ namespace WCell.RealmServer.Mail
 				return MailError.CANNOT_SEND_TO_SELF;
 			}
 
+		    var requiredCash = money;
+
 			// Check that sender is good for the money.
-			if (MailMgr.ChargePostage && !m_chr.GodMode)
+			if (MailMgr.ChargePostage)
 			{
-				var requiredCash = money + MailMgr.PostagePrice;
+                if (!m_chr.GodMode)
+                {
+                    requiredCash += MailMgr.PostagePrice;
 
-				var count = (items == null) ? 0u : (uint)items.Count;
-				if (count > 0)
-				{
-					requiredCash += ((count - 1) * MailMgr.PostagePrice);
-				}
-
-				if (requiredCash > m_chr.Money)
-				{
-					MailHandler.SendResult(m_chr.Client, 0u, MailResult.MailSent, MailError.NOT_ENOUGH_MONEY);
-					return MailError.NOT_ENOUGH_MONEY;
-				}
-
-				// Charge for the letter (already checked, Character has enough)
-				m_chr.Money -= requiredCash;
+                    var count = (items == null) ? 0u : (uint) items.Count;
+                    if (count > 0)
+                    {
+                        requiredCash += ((count - 1)*MailMgr.PostagePrice);
+                    }
+                }
 			}
+
+            if (requiredCash > m_chr.Money)
+            {
+                MailHandler.SendResult(m_chr.Client, 0u, MailResult.MailSent, MailError.NOT_ENOUGH_MONEY);
+                return MailError.NOT_ENOUGH_MONEY;
+            }
+
+            // Charge for the letter (already checked, Character has enough)
+            m_chr.Money -= requiredCash;
 
 			// All good, send an ok message
 			MailHandler.SendResult(m_chr.Client, 0u, MailResult.MailSent, MailError.OK);
+            m_chr.Achievements.CheckPossibleAchievementUpdates(AchievementCriteriaType.GoldSpentForMail, requiredCash);
 
 			var deliveryDelay = 0u;
 			if (!m_chr.GodMode)
@@ -422,7 +429,6 @@ namespace WCell.RealmServer.Mail
 			if (letter.CashOnDelivery > 0)
 			{
 				m_chr.Money -= letter.CashOnDelivery;
-				letter.CashOnDelivery = 0;
 
 				// item was sent COD. Send the payment back to the sender in a new mail.
 				var charRecord = CharacterRecord.GetRecord(letter.SenderEntityId.Low);
@@ -430,6 +436,7 @@ namespace WCell.RealmServer.Mail
 				{
 					SendMail(charRecord.Name, letter.Subject, "", MailStationary.Normal, null, letter.CashOnDelivery, 0);
 				}
+                letter.CashOnDelivery = 0;
 			}
 
 			RealmServer.IOQueue.AddMessage(new Message(() =>

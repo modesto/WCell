@@ -689,7 +689,25 @@ namespace WCell.RealmServer.Entities
 
 		public int KillExperienceGainModifierPercent { get; set; }
 
-		public int QuestExperienceGainModifierPercent { get; set; }
+		public int QuestExperienceGainModifierPercent {
+            get
+            {
+                if(Zone.MapId == Constants.World.MapId.Kalimdor || Zone.MapId == MapId.EasternKingdoms)
+                {
+                    return XpGenerator.DefaultXpBaseValueAzeroth;
+                }
+                if(Zone.MapId == Constants.World.MapId.Outland)
+                {
+                    if(Zone.Id == ZoneId.EversongWoods || Zone.Id == ZoneId.Ghostlands)
+                    {
+                        return XpGenerator.DefaultXpBaseValueAzeroth;
+                    }
+                    return XpGenerator.DefaultXpBaseValueOutland;
+                }
+                return XpGenerator.DefaultXpBaseValueNorthrend;
+            }
+		    set { QuestExperienceGainModifierPercent = value; }
+        }
 
 		#region CombatRatings
 
@@ -712,7 +730,7 @@ namespace WCell.RealmServer.Entities
 		/// </summary>
 		public void ModCombatRating(CombatRating rating, int delta)
 		{
-			var val = GetInt32(PlayerFields.COMBAT_RATING_1 - 1 + (int)rating);
+            var val = GetInt32(PlayerFields.COMBAT_RATING_1 - 1 + (int)rating) + delta;
 			SetInt32(PlayerFields.COMBAT_RATING_1 - 1 + (int)rating, val);
 			UpdateChancesByCombatRating(rating);
 		}
@@ -2144,6 +2162,30 @@ namespace WCell.RealmServer.Entities
 
 		}
 
+		#endregion
+
+		#region Glyphs
+		public uint Glyphs_Enable
+		{
+			get { return GetUInt32(PlayerFields.GLYPHS_ENABLED); }
+			set { SetUInt32(PlayerFields.GLYPHS_ENABLED, value); }
+		}
+		public void SetGlyphSlot(byte slot, uint id)
+		{
+			SetUInt32(PlayerFields.GLYPH_SLOTS_1 + slot, id);
+		}
+		public uint GetGlyphSlot(byte slot)
+		{
+			return GetUInt32(PlayerFields.GLYPH_SLOTS_1 + slot);
+		}
+		public void SetGlyph(byte slot, uint glyph)
+		{
+			SetUInt32(PlayerFields.GLYPHS_1 + slot, glyph);
+		}
+		public uint GetGlyph(byte slot)
+		{
+			return GetUInt32(PlayerFields.GLYPHS_1 + slot);
+		}
 		#endregion
 	}
 }

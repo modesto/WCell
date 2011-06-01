@@ -20,6 +20,7 @@ using System.Collections.Generic;
 using System.Linq;
 using NLog;
 using WCell.Constants;
+using WCell.Constants.Achievements;
 using WCell.Constants.NPCs;
 using WCell.Constants.Pets;
 using WCell.Constants.Spells;
@@ -50,11 +51,21 @@ namespace WCell.RealmServer.Talents
 
 		internal void CalcSpentTalentPoints()
 		{
+            for (var i = 0; i < Trees.Length; i++)
+            {
+                m_treePoints[i] = 0;
+            }
+
 			foreach (var talent in this)
 			{
-				m_treePoints[talent.Entry.Tree.TabIndex] += talent.Rank;
+                UpdateTreePoint(talent.Entry.Tree.TabIndex, talent.ActualRank);
 			}
 		}
+
+        internal void UpdateTreePoint(uint tabIndex, int diff)
+        {
+            m_treePoints[tabIndex] += diff;
+        }
 
 		#region Default Properties
 		public TalentTree[] Trees
@@ -391,6 +402,7 @@ namespace WCell.RealmServer.Talents
 
 				chr.Money -= price;
 				CurrentResetTier = tier + 1;
+                chr.Achievements.CheckPossibleAchievementUpdates(AchievementCriteriaType.GoldSpentForTalents, price);
 				return true;
 			}
 			return false;
