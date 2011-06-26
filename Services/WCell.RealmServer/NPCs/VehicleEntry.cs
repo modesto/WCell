@@ -69,8 +69,9 @@ namespace WCell.RealmServer.NPCs
 
 
 		// custom
-
 		public int SeatCount;
+
+	    public bool IsMinion;
 	}
 
 	public class VehicleSeatEntry
@@ -163,6 +164,8 @@ namespace WCell.RealmServer.NPCs
 
 		public uint FlagB; //45
 
+        // custom
 
+	    public uint PassengerNPCId;
 	}
 }

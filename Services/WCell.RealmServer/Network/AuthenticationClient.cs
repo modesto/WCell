@@ -4,7 +4,7 @@
  *   copyright		: (C) The WCell Team
  *   email		: info@wcell.org
  *   last changed	: $LastChangedDate: 2009-02-07 02:16:59 +0800 (Sat, 07 Feb 2009) $
- *   last author	: $LastChangedBy: dominikseifert $
+
  *   revision		: $Rev: 737 $
  *
  *   This program is free software; you can redistribute it and/or modify
@@ -16,24 +16,32 @@
 
 using System;
 using System.ServiceModel;
-using System.Threading;
 using NLog;
 using WCell.Core.Timers;
 using WCell.Intercommunication.Client;
 using WCell.RealmServer.Lang;
 using WCell.RealmServer.Res;
-using WCell.Util;
 using WCell.Util.NLog;
 using WCell.Util.Variables;
 
-namespace WCell.RealmServer.Server
+namespace WCell.RealmServer.Network
 {
 	/// <summary>
 	/// Provides a client wrapper around the authentication service used for 
 	/// authentication-to-realm server communication.
 	/// </summary>
-	public partial class AuthenticationClient
+	public class AuthenticationClient
 	{
+		/// <summary>
+		/// Is called when the RealmServer successfully connects to the AuthServer
+		/// </summary>
+		public event EventHandler Connected;
+
+		/// <summary>
+		/// Is called when the RealmServer disconnects from or loses connection to the AuthServer
+		/// </summary>
+		public event EventHandler Disconnected;
+
 		protected static Logger log = LogManager.GetCurrentClassLogger();
 
 		[Variable("IPCUpdateInterval")]
@@ -157,7 +165,6 @@ namespace WCell.RealmServer.Server
 					if (!m_warned)
 					{
 						log.Error(Resources.IPCProxyFailed, UpdateInterval);
-						m_warned = true;
 					}
 				}
 				else
@@ -166,6 +173,7 @@ namespace WCell.RealmServer.Server
 				}
 				conn = false;
 			}
+			m_warned = true;
 
 			if (conn)
 			{

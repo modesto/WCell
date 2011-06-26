@@ -1,13 +1,11 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using WCell.Constants.Spells;
 using WCell.Core.Initialization;
 using WCell.RealmServer.NPCs;
 using WCell.Constants.NPCs;
-using WCell.Util;
 using WCell.Util.Graphics;
+using WCell.RealmServer.AI.Brains;
+using WCell.RealmServer.Spells;
+using WCell.RealmServer.Entities;
 
 namespace WCell.Addons.Default.NPCs
 {
@@ -47,6 +45,31 @@ namespace WCell.Addons.Default.NPCs
 			//{
 			//    entry.AddSpell(SpellId.EffectFireNovaRank1);
 			//}, NPCId.FireNovaTotem);
+			SetupMirrorImage();
+		}
+		static void SetupMirrorImage()
+		{
+			NPCEntry mirrorimage = NPCMgr.GetEntry(NPCId.MirrorImage);
+			mirrorimage.BrainCreator = mirror => new MirrorImageBrain(mirror);
+
+			mirrorimage.Activated += image =>
+			{
+				image.PlayerOwner.SpellCast.Start(SpellHandler.Get(SpellId.CloneMe), true, image);
+
+				//image.SpellCast.Start(SpellId.HallsOfReflectionClone_2);//id 69837 is this even needed?
+				//EFF0: Aura Id 279 (SPELL_AURA_279), value = 1
+				
+				//other spells ???
+				//58838 Inherit Master's Threat List
+				//SPELL_FIREBLAST       = 59637,
+				//SPELL_FROSTBOLT       = 59638,
+			};
+
+		}
+		public class MirrorImageBrain : MobBrain
+		{
+			public MirrorImageBrain(NPC image)
+				: base(image) { }
 		}
 	}
 }

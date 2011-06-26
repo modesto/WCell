@@ -83,6 +83,7 @@ namespace WCell.Core.Initialization
         }
 
         public readonly Dictionary<InitializationPass, List<InitializationStep>> InitSteps;
+    	private int totalStepCount;
         private InitializationPass m_currentPass;
         private int totalFails, totalSuccess;
         private InitFailedHandler failHandler;
@@ -161,6 +162,18 @@ namespace WCell.Core.Initialization
             // Report the total amount of steps loaded, even if we loaded none.
             //s_log.Info(string.Format(Resources.InitStepsLoaded, totalStepCount.ToString(), (totalStepCount == 1 ? "step" : "steps")));
         }
+
+		public void AddGlobalMgrsOfAsm(Assembly asm)
+		{
+			foreach (var type in asm.GetTypes())
+			{
+				var mgrAttr = type.GetCustomAttributes<GlobalMgrAttribute>().FirstOrDefault();
+				if (mgrAttr != null)
+				{
+					UnresolvedDependencies.Add(type, new GlobalMgrInfo());
+				}
+			}
+		}
 
         public GlobalMgrInfo GetGlobalMgrInfo(Type t)
         {
@@ -243,6 +256,7 @@ namespace WCell.Core.Initialization
 
     	private void AddIndipendentStep(InitializationStep step)
     	{
+    		totalStepCount++;
 			InitSteps[step.Pass].Add(step);
     	}
 

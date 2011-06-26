@@ -68,6 +68,7 @@ namespace WCell.RealmServer.Modifiers
 			FlatIntModHandlers[(int)StatModifierInt.ParryChance] = UpdateParryChance;
 			FlatIntModHandlers[(int)StatModifierInt.AttackerMeleeHitChance] = UpdateMeleeHitChance;
 			FlatIntModHandlers[(int)StatModifierInt.AttackerRangedHitChance] = UpdateRangedHitChance;
+			FlatIntModHandlers[(int) StatModifierInt.Expertise] = UpdateExpertise;
 
 			//MultiModHandlers[(int)ModifierMulti.BlockChance] = UpdateBlockChance;
 			MultiModHandlers[(int)StatModifierFloat.BlockValue] = UpdateBlockChance;
@@ -537,7 +538,7 @@ namespace WCell.RealmServer.Modifiers
 																				 chr.GetCombatRating(CombatRating.Dodge),
 																				 chr.GetCombatRating(CombatRating.DefenseSkill)
 																				 );
-				dodgeChance += (dodgeChance * unit.IntMods[(int)StatModifierInt.DodgeChance] + 50) / 100;
+				dodgeChance += unit.IntMods[(int) StatModifierInt.DodgeChance];
 				chr.DodgeChance = dodgeChance;
 			}
 		}

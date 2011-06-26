@@ -1,12 +1,13 @@
 ﻿using System;
 using WCell.Constants;
 using WCell.Constants.ArenaTeams;
+using WCell.RealmServer.Database;
 using WCell.Util.Threading;
 using WCell.RealmServer.Entities;
 using WCell.RealmServer.Global;
 using WCell.Util;
 
-namespace WCell.RealmServer.ArenaTeams
+namespace WCell.RealmServer.Battlegrounds.Arenas
 {
     /// <summary>
     /// Represents the relationship between a Character and its Arena Team.
@@ -77,31 +78,31 @@ namespace WCell.RealmServer.ArenaTeams
             }
         }
 
-        public uint gamesWeek
+        public uint GamesWeek
         {
             get { return (uint)_gamesWeek; }
             set { _gamesWeek = (int)value; }
         }
 
-        public uint winsWeek
+        public uint WinsWeek
         {
             get { return (uint)_winsWeek; }
             set { _winsWeek = (int)value; }
         }
 
-        public uint gamesSeason
+        public uint GamesSeason
         {
             get { return (uint)_gamesSeason; }
             set { _gamesSeason = (int)value; }
         }
 
-        public uint winsSeason
+        public uint WinsSeason
         {
             get { return (uint)_winsSeason; }
             set { _winsSeason = (int)value; }
         }
 
-        public uint personalRating
+        public uint PersonalRating
         {
             get { return (uint)_personalRating; }
             set { _personalRating = (int)value; }

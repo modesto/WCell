@@ -8,10 +8,12 @@ using WCell.RealmServer.Database;
 using WCell.RealmServer.NPCs;
 using WCell.Util.Collections;
 
-namespace WCell.RealmServer.ArenaTeams
+namespace WCell.RealmServer.Battlegrounds.Arenas
 {
-	public static class ArenaTeamMgr
+	public static class ArenaMgr
 	{
+		public static int MaxArenaTeamNameLength = 24;
+
         #region Charters
 		private static uint arenateamCharter2v2Cost = 800000;
 		private static uint arenateamCharter3v3Cost = 1200000;
@@ -210,7 +212,5 @@ namespace WCell.RealmServer.ArenaTeams
             return true;
         }
         #endregion
-
-        public static int MaxArenaTeamNameLength = 24;
 	}
 }

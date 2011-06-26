@@ -289,6 +289,7 @@
     <Compile Include="Instances\Eastern Kingdoms\ZulAman.cs" />
     <Compile Include="Instances\Kalimdor\ZulFarrak.cs" />
     <Compile Include="Instances\Eastern Kingdoms\ZulGurub.cs" />
+    <Compile Include="Quests\DeathKnightQuests.cs" />
     <Compile Include="Spells\DeathKnight\DeathKnightDiseases.cs" />
     <Compile Include="Spells\DeathKnight\DeathKnightFrostFixes.cs" />
     <Compile Include="Spells\DeathKnight\DeathKnightBloodFixes.cs" />
@@ -334,6 +335,8 @@
     <Compile Include="Spells\Warrior\WarriorFixes.cs" />
     <Compile Include="Teleport\TeleportNode.cs" />
     <Compile Include="Teleport\ZeppelinMaster.cs" />
+    <Compile Include="Vehicles\VehicleCorrections.cs" />
+    <Compile Include="Vehicles\VehicleData.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Core\Cell.Core\Cell.Core.csproj">

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using WCell.Constants.Pets;
 using WCell.RealmServer.Entities;
 using WCell.Core.Network;
 using WCell.Constants.NPCs;
@@ -93,7 +94,7 @@ namespace WCell.RealmServer.NPCs.Vehicles
 
 		public bool CanEnter(Unit unit)
 		{
-            return IsNeutralWith(unit) && !IsFull;
+            return IsAtLeastNeutralWith(unit) && !IsFull;
 		}
 
 		public VehicleSeat GetFirstFreeSeat()
@@ -130,7 +131,81 @@ namespace WCell.RealmServer.NPCs.Vehicles
 					seat.ClearSeat();
 				}
 			}
+
+            if (Entry.VehicleEntry.IsMinion)
+                Dismiss();
+            else
+            {
+                //TODO: Return to spawn point, without causing exceptions!
+            }
 		}
+
+        public void Dismiss()
+        {
+            RemoveFromMap();
+        }
+
+        public uint[] BuildVehicleActionBar()
+        {
+            var bar = new uint[PetConstants.PetActionCount];
+            var i = 0;
+
+            byte j = 0;
+            if (Entry.Spells != null)
+            {
+                var spells = Entry.Spells.GetEnumerator();
+
+                for (j = 0; j < PetConstants.PetSpellCount; j++)
+                {
+                    if (!spells.MoveNext())
+                    {
+                        bar[i++] = new PetActionEntry
+                        {
+                            Type = PetActionType.CastSpell2 + j
+                        }.Raw;
+                    }
+                    else
+                    {
+                        var spell = spells.Current;
+                        var actionEntry = new PetActionEntry();
+                        if (spell.Value.IsPassive)
+                        {
+                            var cast = SpellCast;
+                            if (cast != null)
+                                cast.TriggerSelf(spell.Value);
+
+                            actionEntry.Type = PetActionType.CastSpell2 + j;
+                        }
+                        else
+                        {
+                            actionEntry.SetSpell(spell.Key, PetActionType.DefaultSpellSetting);
+
+                        }
+                        bar[i++] = actionEntry.Raw;
+                    }
+                }
+            }
+            else
+            {
+                for (j = 0; j < PetConstants.PetSpellCount; j++)
+                {
+                    bar[i++] = new PetActionEntry
+                    {
+                        Type = PetActionType.CastSpell2 + j
+                    }.Raw;
+                }
+            }
+
+            for (; j < PetConstants.PetActionCount; j++)
+            {
+                bar[i++] = new PetActionEntry
+                {
+                    Type = PetActionType.CastSpell2 + j
+                }.Raw;
+            }
+
+            return bar;
+        }
 
 		protected internal override void DeleteNow()
 		{

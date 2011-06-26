@@ -2,10 +2,12 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Castle.ActiveRecord;
 using Cell.Core;
 using NLog;
 using WCell.Constants.ArenaTeams;
 using WCell.Core.Database;
+using WCell.RealmServer.Battlegrounds.Arenas;
 using WCell.RealmServer.Chat;
 using WCell.RealmServer.Database;
 using WCell.RealmServer.Entities;
@@ -14,13 +16,37 @@ using WCell.Util.Collections;
 using WCell.Util.NLog;
 using WCell.Util.Threading;
 
-namespace WCell.RealmServer.ArenaTeams
+namespace WCell.RealmServer.Battlegrounds.Arenas
 {
-	public partial class ArenaTeam : WCellRecord<ArenaTeam>, INamed, IEnumerable<ArenaTeamMember>, IChatTarget
+	[ActiveRecord("ArenaTeam", Access = PropertyAccess.Property)]
+	public class ArenaTeam : WCellRecord<ArenaTeam>, INamed, IEnumerable<ArenaTeamMember>, IChatTarget
 	{
-		#region Fields
-		private static readonly Logger log = LogManager.GetCurrentClassLogger();
+        private static readonly NHIdGenerator _idGenerator = new NHIdGenerator(typeof(ArenaTeam), "_id");
 
+		#region Database Fields
+        [PrimaryKey(PrimaryKeyType.Assigned, "Id")]
+        private long _id
+        {
+            get;
+            set;
+        }
+
+        [Field("Name", NotNull = true, Unique = true)]
+        private string _name;
+
+        [Field("LeaderLowId", NotNull = true)]
+        private int _leaderLowId;
+
+        public uint LeaderLowId
+        {
+            get { return (uint)_leaderLowId; }
+        }
+
+        [Field("Type", NotNull = true)]
+        private int _type;
+		#endregion
+
+		#region Fields
 		private SpinWaitLock m_syncRoot;
 		private ArenaTeamMember m_leader;
         private ArenaTeamStats m_stats;
@@ -127,7 +153,7 @@ namespace WCell.RealmServer.ArenaTeams
 			_name = name;
             _type = (int)type;
 
-            m_slot = ArenaTeamMgr.GetSlotByType(type);
+            m_slot = ArenaMgr.GetSlotByType(type);
 
 			m_leader = new ArenaTeamMember(leader, this, true);
             m_stats = new ArenaTeamStats(this);
@@ -142,7 +168,7 @@ namespace WCell.RealmServer.ArenaTeams
 
         #region Init
         /// <summary>
-        /// Initialize the Team after loading from DB
+        /// Load & initialize the Team
         /// </summary>
         internal void InitAfterLoad()
         {
@@ -153,7 +179,7 @@ namespace WCell.RealmServer.ArenaTeams
                 Members.Add(atm.Id, atm);
             }
             m_stats = ArenaTeamStats.FindByPrimaryKey(this.Id);
-            m_slot = ArenaTeamMgr.GetSlotByType(Type);
+            m_slot = ArenaMgr.GetSlotByType(Type);
 
             m_leader = this[LeaderLowId];
             if (m_leader == null)
@@ -171,7 +197,7 @@ namespace WCell.RealmServer.ArenaTeams
         /// </summary>
         internal void Register()
         {
-            ArenaTeamMgr.RegisterArenaTeam(this);
+            ArenaMgr.RegisterArenaTeam(this);
         }
         #endregion
 
@@ -225,7 +251,7 @@ namespace WCell.RealmServer.ArenaTeams
                 SyncRoot.Exit();
             }
 
-            ArenaTeamMgr.RegisterArenaTeamMember(newMember);
+            ArenaMgr.RegisterArenaTeamMember(newMember);
 
             //ArenaTeamHandler.SendEventToTeam(this, ArenaTeamEvents.JOINED_SS, newMember);
 
@@ -322,7 +348,7 @@ namespace WCell.RealmServer.ArenaTeams
         /// </summary>
         protected void OnRemoveMember(ArenaTeamMember member)
         {
-            ArenaTeamMgr.UnregisterArenaTeamMember(member);
+            ArenaMgr.UnregisterArenaTeamMember(member);
 
             var chr = member.Character;
             if (chr != null)
@@ -463,7 +489,7 @@ namespace WCell.RealmServer.ArenaTeams
 					RemoveMember(member, false);
 				}
 
-				ArenaTeamMgr.UnregisterArenaTeam(this);
+				ArenaMgr.UnregisterArenaTeam(this);
 				RealmServer.IOQueue.AddMessage(() => Delete());
 			}
 			finally

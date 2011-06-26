@@ -20,12 +20,12 @@ using WCell.Core.Network;
 using WCell.RealmServer.Global;
 using WCell.RealmServer.Network;
 
-namespace WCell.RealmServer.Chat
+namespace WCell.RealmServer.Handlers
 {
 	/// <summary>
 	/// These commands can be used by GMs through WoW's internal console
 	/// </summary>
-    public static class GMCommands
+    public static class ClientConsoleCommandHandler
     {
         // console command "setrawpos x y z o"
         [ClientPacketHandler(RealmServerOpCode.CMSG_MOVE_SET_RAW_POSITION)]
