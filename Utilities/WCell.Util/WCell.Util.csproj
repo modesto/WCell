@@ -99,7 +99,7 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <NoWarn>1591,1587,1570,1573,1572</NoWarn>
     <DebugType>full</DebugType>
-    <PlatformTarget>x86</PlatformTarget>
+    <PlatformTarget>AnyCPU</PlatformTarget>
     <CodeAnalysisUseTypeNameInSuppression>true</CodeAnalysisUseTypeNameInSuppression>
     <CodeAnalysisModuleSuppressionsFile>GlobalSuppressions.cs</CodeAnalysisModuleSuppressionsFile>
     <ErrorReport>prompt</ErrorReport>
@@ -137,6 +137,8 @@
       <Link>Properties\SolutionInfo.cs</Link>
     </Compile>
     <Compile Include="ArrayExtensions.cs" />
+    <Compile Include="IOExtensions.cs" />
+    <Compile Include="Graphics\Point2D.cs" />
     <Compile Include="StaticCircularList.cs" />
     <Compile Include="Collections\BaseImmutableDictionary.cs" />
     <Compile Include="Collections\ImmutableDictionary.cs" />
