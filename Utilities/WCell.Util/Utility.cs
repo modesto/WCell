@@ -4,7 +4,7 @@
  *   copyright		: (C) The WCell Team
  *   email		: info@wcell.org
  *   last changed	: $LastChangedDate: 2008-08-10 05:18:25 +0800 (Sun, 10 Aug 2008) $
- *   last author	: $LastChangedBy: dominikseifert $
+ 
  *   revision		: $Rev: 585 $
  *
  *   This program is free software; you can redistribute it and/or modify
@@ -97,7 +97,7 @@ namespace WCell.Util
 						if (type.IsValueType)
 						{
 							TypeMap[type.FullName] = type;
-							if (type.IsEnum)
+							if (type.IsEnum && !type.IsNested)
 							{
 								var values = Enum.GetValues(type);
 								//if (values.Length >= 100)
@@ -584,6 +584,27 @@ namespace WCell.Util
 			return from > to ? RandomFloat() * (from - to) + to : RandomFloat() * (to - from) + from;
 		}
 
+		private static readonly Random rnd = new Random();
+
+		public static void Shuffle<T>(ICollection<T> col)
+		{
+			var arr = col.ToArray();
+			var b = new byte[arr.Length];
+			rnd.NextBytes(b);
+			Array.Sort(b, arr);
+			col.Clear();
+			for (var i = 0; i < arr.Length; i++)
+			{
+				var item = arr[i];
+				col.Add(item);
+			}
+		}
+
+		public static O GetRandom<O>(this IList<O> os)
+		{
+			return os.Count == 0 ? default(O) : os[Random(0, os.Count)];
+		}
+
 		#endregion
 
 		/// <summary>
@@ -784,11 +805,6 @@ namespace WCell.Util
 								 time.Second, time.Millisecond);
 		}
 		#endregion
-
-		public static O GetRandom<O>(this IList<O> os)
-		{
-			return os.Count == 0 ? default(O) : os[Random(0, os.Count)];
-		}
 
 		/// <summary>
 		/// Checks whether the given mail-address is valid.
@@ -1049,25 +1065,16 @@ namespace WCell.Util
 		}
 		#endregion
 
+		public const float Epsilon = 1e-6f;
+
+		public static bool IsWithinEpsilon(this float val, float otherVal)
+		{
+			return ((val <= (otherVal + Epsilon)) && (val >= (otherVal - Epsilon)));
+		}
+
 		public static long MakeLong(int low, int high)
 		{
 			return low | ((long)high << 32);
-		}
-
-		private static readonly Random rnd = new Random();
-
-		public static void Shuffle<T>(ICollection<T> col)
-		{
-			var arr = col.ToArray();
-			var b = new byte[arr.Length];
-			rnd.NextBytes(b);
-			Array.Sort(b, arr);
-			col.Clear();
-			for (var i = 0; i < arr.Length; i++)
-			{
-				var item = arr[i];
-				col.Add(item);
-			}
 		}
 	}
 

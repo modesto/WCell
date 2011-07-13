@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using WCell.Constants;
+using WCell.MPQTool;
+using WCell.Terrain.Recast;
 using WCell.Util.Variables;
 
 namespace WCell.Terrain
@@ -21,11 +23,16 @@ namespace WCell.Terrain
 	}
 
 	/// <summary>
-	/// 
+	/// TODO: Make this a separate config
 	/// </summary>
 	public static class WCellTerrainSettings
 	{
 		private static ITerrainConfiguration config;
+
+		public static MpqLibrarian GetDefaultMPQFinder()
+		{
+			return MpqLibrarian.GetDefaultFinder(WoWPath);
+		}
 
 		public static ITerrainConfiguration Config
 		{
@@ -34,14 +41,18 @@ namespace WCell.Terrain
 			{
 				config = value;
 
-				LibDir = RootFolder + "Lib/";
+				WCellTerrainDir = RootFolder + "WCell-Terrain/";
+				LibDir = WCellTerrainDir + "Lib/";
 				RunDir = RootFolder + "Run/";
 				ContentDir = RunDir + "Content/";
-				WMODir = ContentDir + "Maps/";
-				M2Dir = ContentDir + "Maps/";
 				LogFolder = ContentDir + "Logs/";
+				DBCDir = ContentDir + "dbc3.3.5/";
 				MapDir = ContentDir + "Maps/";
-				DBCDir = ContentDir + "dbc/";
+
+				SimpleMapDir = MapDir + "Simple/";
+
+				RecastInputMeshFolder = MapDir + "RecastInput/";
+				RecastNavMeshFolder = MapDir + "RecastNavMeshes/";
 			}
 		}
 
@@ -58,6 +69,7 @@ namespace WCell.Terrain
 		/// </summary>
 		public static bool UseMultiThreadedLoading { get; set; }
 
+		public static string WCellTerrainDir;
 		public static string LibDir;
 		public static string RunDir;
 		public static string ContentDir;
@@ -65,7 +77,12 @@ namespace WCell.Terrain
 		public static string M2Dir;
 		public static string LogFolder;
 		public static string MapDir;
+		public static string RawMapDir;
+		public static string SimpleMapDir;
 		public static string DBCDir;
+
+		public static string RecastInputMeshFolder;
+		public static string RecastNavMeshFolder;
 
 		public static string MapDBCName = "Map.dbc";
 		public static string WoWPath = @"D:\Games\WoW";

@@ -189,7 +189,9 @@ namespace WCell.RealmServer.Entities
 			// Set model after Scale
 			Model = m_entry.GetRandomModel();
 
-			GossipMenu = entry.DefaultGossip; // set gossip menu
+			GossipMenu = (m_spawnPoint != null && m_spawnPoint.SpawnEntry.DefaultGossip != null) ? 
+								m_spawnPoint.SpawnEntry.DefaultGossip : 
+								entry.DefaultGossip;
 
 			// TODO: Init stats
 			//for (int i = 0; i < 5; i++)
@@ -238,7 +240,7 @@ namespace WCell.RealmServer.Entities
 
 			if (PowerType == PowerType.Mana)
 			{
-				ManaRegenPerTickInterruptedPct = 20;
+				ManaRegenPerTickInterrupted = 20;
 			}
 
 			UpdateUnitState();
@@ -608,6 +610,12 @@ namespace WCell.RealmServer.Entities
 				return 0;
 			}
 		}
+
+		public override bool IsRegenerating
+		{
+			get { return IsAreaActive && base.IsRegenerating; }
+		}
+
 		#endregion
 
 		#region NPC-specific Fields
@@ -880,6 +888,7 @@ namespace WCell.RealmServer.Entities
 
 			m_entry.NotifyActivated(this);
 		}
+
 		#endregion
 
 		/// <summary>

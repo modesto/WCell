@@ -1,6 +1,6 @@
-using WCell.Core.Terrain;
-using WCell.Core.TerrainAnalysis;
 using WCell.Constants.World;
+using WCell.Core.Initialization;
+using WCell.Core.Terrain;
 
 namespace WCell.RealmServer.Global
 {

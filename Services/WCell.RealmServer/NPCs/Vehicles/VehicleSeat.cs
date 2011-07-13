@@ -5,6 +5,7 @@ using System.Text;
 using WCell.Constants;
 using WCell.Constants.NPCs;
 using WCell.Constants.Spells;
+using WCell.RealmServer.AI;
 using WCell.RealmServer.Entities;
 using WCell.RealmServer.Handlers;
 using WCell.Core;
@@ -16,26 +17,46 @@ namespace WCell.RealmServer.NPCs.Vehicles
 		public readonly Vehicle Vehicle;
 		public readonly VehicleSeatEntry Entry;
 		public readonly byte Index;
-		public readonly bool IsDriverSeat;
-		private Unit m_passenger;
+		private Unit _passenger;
 
-		public VehicleSeat(Vehicle vehicle, VehicleSeatEntry entry, byte index, bool driver)
+		public bool IsDriverSeat
+		{
+			get { return Entry.Flags.HasAnyFlag(VehicleSeatFlags.VehicleControlSeat); }
+		}
+
+		public bool CharacterCanEnterOrExit
+		{
+			get { return Entry.Flags.HasAnyFlag(VehicleSeatFlags.CanEnterorExit); }
+			internal set
+			{ 
+				if(!value)
+					Entry.Flags &= ~VehicleSeatFlags.CanEnterorExit;
+				else
+					Entry.Flags |= VehicleSeatFlags.CanEnterorExit;
+			}
+		}
+
+		public bool HasUnitAttachment
+		{
+			get { return Entry.PassengerNPCId != 0; }
+		}
+
+		public VehicleSeat(Vehicle vehicle, VehicleSeatEntry entry, byte index)
 		{
 			Vehicle = vehicle;
 			Entry = entry;
 			Index = index;
-			IsDriverSeat = driver;
 		}
 
 		public bool IsOccupied
 		{
-			get { return m_passenger != null; }
+			get { return _passenger != null; }
 		}
 
 		public Unit Passenger
 		{
-			get { return m_passenger; }
-			internal set { m_passenger = value; }
+			get { return _passenger; }
+			internal set { _passenger = value; }
 		}
 
 		/// <summary>
@@ -43,14 +64,13 @@ namespace WCell.RealmServer.NPCs.Vehicles
 		/// </summary>
 		public void Enter(Unit passenger)
 		{
-			m_passenger = passenger;
+			this._passenger = passenger;
 
 			passenger.m_vehicleSeat = this;
 			passenger.MovementFlags |= MovementFlags.OnTransport;
 			passenger.TransportPosition = Entry.AttachmentOffset;
 			passenger.TransportOrientation = Entry.PassengerYaw;
-			Vehicle.m_passengerCount++;
-            Vehicle.MovementFlags2 |= MovementFlags2.PreventJumping;
+			Vehicle._passengerCount++;
 
 			if (IsDriverSeat)
 			{
@@ -59,25 +79,36 @@ namespace WCell.RealmServer.NPCs.Vehicles
 				Vehicle.UnitFlags |= UnitFlags.Possessed;
 			}
 
-			if (passenger is Character)
-			{
-				var chr = (Character)passenger;
-				var pos = Vehicle.Position;
+			var chr = passenger as Character;
+			var pos = Vehicle.Position;
 
+			// this will be null if its not a character
+			if (chr != null)
+			{
 				VehicleHandler.Send_SMSG_ON_CANCEL_EXPECTED_RIDE_VEHICLE_AURA(chr);
 				VehicleHandler.SendBreakTarget(chr, Vehicle);
+			}
 
-                chr.IncMechanicCount(SpellMechanic.Rooted);
-				MovementHandler.SendEnterTransport(chr);
+			MovementHandler.SendEnterTransport(passenger);
+
+			if (chr != null)
+			{
 				MiscHandler.SendCancelAutoRepeat(chr, Vehicle);
-				MovementHandler.SendMoveToPacket(Vehicle, ref pos, 0, 0, MonsterMoveFlags.Walk);
+				//var orientation = Vehicle.m_vehicleSeat != null ? Vehicle.m_vehicleSeat.Entry.PassengerYaw : 0;
+				//var moveflags = Vehicle.m_vehicleSeat != null ? MonsterMoveFlags.Flag_0x1000000 : MonsterMoveFlags.Walk;
+				//MovementHandler.SendMoveToPacket(Vehicle, ref pos, orientation, 0, moveflags);
 				PetHandler.SendVehicleSpells(chr, Vehicle);
+			}
 
+			passenger.IncMechanicCount(SpellMechanic.Rooted, true);
+			passenger.HasPermissionToMove = false;
+			passenger.MovementFlags |= MovementFlags.Root;
+
+			if (chr != null)
+			{
 				chr.SetMover(Vehicle, IsDriverSeat);
 				chr.FarSight = Vehicle.EntityId;
 			}
-
-			// TODO: Character is now inside the Vehicle but cant move
 		}
 
 		/// <summary>
@@ -85,7 +116,7 @@ namespace WCell.RealmServer.NPCs.Vehicles
 		/// </summary>
 		public void ClearSeat()
 		{
-			if (m_passenger == null)
+			if (_passenger == null)
 			{
 				return;
 			}
@@ -93,37 +124,40 @@ namespace WCell.RealmServer.NPCs.Vehicles
 			if (IsDriverSeat)
 			{
 				Vehicle.Charmer = null;
-				m_passenger.Charm = null;
+				_passenger.Charm = null;
+				Vehicle.UnitFlags &= ~UnitFlags.Possessed;
 			}
 
-			Vehicle.m_passengerCount--;
-            if (m_passenger.MovementFlags.HasFlag(MovementFlags.Flying))
+			Vehicle._passengerCount--;
+            if (_passenger.MovementFlags.HasFlag(MovementFlags.Flying))
             {
                 var cast = Vehicle.SpellCast;
                     if(cast != null)
                         cast.Trigger(SpellId.EffectParachute);
             }
 
-		    m_passenger.MovementFlags &= ~MovementFlags.OnTransport;
-			m_passenger.Auras.RemoveFirstVisibleAura(aura => aura.Spell.IsVehicle);
-            Vehicle.MovementFlags2 &= ~MovementFlags2.PreventJumping;
+		    _passenger.MovementFlags &= ~MovementFlags.OnTransport;
+			_passenger.Auras.RemoveFirstVisibleAura(aura => aura.Spell.IsVehicle);
 
-			if (m_passenger is Character)
+			if (_passenger is Character)
 			{
-				var chr = (Character)m_passenger;
+				var chr = (Character)_passenger;
 				VehicleHandler.Send_SMSG_ON_CANCEL_EXPECTED_RIDE_VEHICLE_AURA(chr);
                 //SendTeleportAck
                 MovementHandler.SendMoved(chr);
 				MiscHandler.SendCancelAutoRepeat(chr, Vehicle);
+				PetHandler.SendEmptySpells(chr);
 				chr.ResetMover();
 				chr.FarSight = EntityId.Zero;
 
 				//MovementHandler.SendEnterTransport(chr);
 			}
-            m_passenger.m_vehicleSeat = null;
-		    MovementHandler.SendHeartbeat(m_passenger, m_passenger.Position, m_passenger.Orientation);
-            m_passenger.DecMechanicCount(SpellMechanic.Rooted);
-			m_passenger = null;
+            _passenger.m_vehicleSeat = null;
+		    MovementHandler.SendHeartbeat(_passenger, _passenger.Position, _passenger.Orientation);
+            _passenger.DecMechanicCount(SpellMechanic.Rooted, true);
+			_passenger.HasPermissionToMove = true;
+			_passenger.MovementFlags &= ~MovementFlags.Root;
+			_passenger = null;
 		}
 	}
 }

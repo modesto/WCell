@@ -4,7 +4,7 @@
  *   copyright		: (C) The WCell Team
  *   email		: info@wcell.org
  *   last changed	: $LastChangedDate: 2010-02-17 05:08:19 +0100 (on, 17 feb 2010) $
- *   last author	: $LastChangedBy: dominikseifert $
+ 
  *   revision		: $Rev: 1256 $
  *
  *   This program is free software; you can redistribute it and/or modify
@@ -1481,6 +1481,19 @@ namespace WCell.RealmServer.Entities
 		}
 
 		/// <summary>
+		/// Current amount of power in percent
+		/// </summary>
+		public int PowerPct
+		{
+			get
+			{
+				var max = MaxPower;
+				return (100 * Power + (max >> 1)) / max;
+			}
+			set { Power = ((value * MaxPower) + 50) / 100; }
+		}
+
+		/// <summary>
 		/// </summary>
 		protected void UpdateHealthAuraState()
 		{
@@ -1584,7 +1597,7 @@ namespace WCell.RealmServer.Entities
 		protected float internalPower;
 		internal void UpdatePower(int delayMillis)
 		{
-			internalPower += (m_PowerRegenPerTick * delayMillis) / (float)RegenerationFormulas.RegenTickDelayMillis;	// rounding
+			internalPower += (PowerRegenPerTickActual * delayMillis) / (float)RegenerationFormulas.RegenTickDelayMillis;	// rounding
 			internalPower = MathUtil.ClampMinMax(internalPower, 0, MaxPower);
 			//SetInt32(UnitFields.POWER1 + (int)PowerType, (int)(val + 0.5f));
 		}

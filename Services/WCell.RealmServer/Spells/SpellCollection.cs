@@ -27,6 +27,7 @@ using WCell.RealmServer.Misc;
 using WCell.RealmServer.Spells.Auras;
 using WCell.RealmServer.Spells.Auras.Handlers;
 using WCell.Util.NLog;
+using WCell.Util.ObjectPools;
 using WCell.Util.Threading;
 using WCell.RealmServer.Database;
 using WCell.RealmServer.Entities;
@@ -343,6 +344,18 @@ namespace WCell.RealmServer.Spells
 				return;
 			}
 			ClearCooldown(spell, alsoClearCategory);
+		}
+
+		public void ClearCooldown(SpellLineId id, bool alsoClearCategory = true)
+		{
+			var line = id.GetLine();
+			if (line != null)
+			{
+				foreach (var spell in line)
+				{
+					ClearCooldown(spell, alsoClearCategory);
+				}
+			}
 		}
 
 		public abstract void ClearCooldown(Spell cooldownSpell, bool alsoClearCategory = true);

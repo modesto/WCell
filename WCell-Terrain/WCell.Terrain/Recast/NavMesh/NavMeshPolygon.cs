@@ -1,30 +1,30 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System.Runtime.InteropServices;
+using WCell.Util.Graphics;
 
-namespace TerrainDisplay.Recast
+namespace WCell.Terrain.Recast.NavMesh
 {
-	/// <summary>
-	/// Managed version of dtPoly
-	/// </summary>
+
 	public class NavMeshPolygon
 	{
-		public static readonly int VERTS_PER_POLYGON = 6;
-	    
+		public const int VERTS_PER_POLYGON = 6;
 
-		public uint FirstLink;												// Index to first link in linked list.
-	    public ushort VertCount;
-        public ushort[] Vertices;											// Indices to vertices of the poly.
-		public ushort[] Neighbors;											// Refs to neighbours of the poly.
-		public ushort Flags;												// Flags (see dtPolyFlags).
-		public byte Area;   												// Area ID of the polygon.
-		public NavMeshPolyTypes Type;   									// Polygon type, see dtPolyTypes
+		public int[] Indices;								// Indices to vertices of the poly
+		public int[] Neighbors;								// neighbors of this poly
+
+		public ushort Flags;								// Flags (see dtPolyFlags)
+		public byte Area;
+		public NavMeshPolygonTypes Type;
+
+		public Triangle GetTriangle(Vector3[] verts)
+		{
+			return new Triangle(verts[Indices[0]], verts[Indices[1]], verts[Indices[2]]);
+		}
 	}
 
-    public enum NavMeshPolyTypes : byte
-    {
-        Ground = 0,
-        OffMeshConnection = 1,
-    }
+	public enum NavMeshPolygonTypes : byte
+	{
+		Ground = 0,
+		OffMeshConnection = 1,
+	}
 }

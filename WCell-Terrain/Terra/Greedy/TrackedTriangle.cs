@@ -7,7 +7,7 @@ using Terra.Memory;
 
 namespace Terra.Greedy
 {
-    internal class TrackedTriangle : Triangle
+    internal class TrackedTriangle : LinkedListTriangle
     {
         // Candidate position
         private int subX;

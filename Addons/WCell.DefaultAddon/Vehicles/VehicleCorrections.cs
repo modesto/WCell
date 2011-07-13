@@ -31,41 +31,31 @@ namespace WCell.Addons.Default.Vehicles
             foreach (var data in dataCollection.VehicleDataList)
             {
                 var npcEntry = NPCMgr.GetEntry(data.NPCId);
-                if (npcEntry != null)
-                {
-                    npcEntry.VehicleId = data.VehicleId;
-                    if (data.PassengerNPCId != 0)
-                    {
-                        if (npcEntry.VehicleEntry.Seats == null)
-                        {
-                            npcEntry.VehicleEntry.Seats = new VehicleSeatEntry[8];
-                        }
+            	if (npcEntry == null) continue;
 
-                        if (data.Seat > npcEntry.VehicleEntry.Seats.Length)
-                            Array.Resize(ref npcEntry.VehicleEntry.Seats, (int) data.Seat);
+            	npcEntry.VehicleId = data.VehicleId;
+            	if (data.PassengerNPCId != 0)
+            	{
+            		if (data.Seat > npcEntry.VehicleEntry.Seats.Length)
+            			Array.Resize(ref npcEntry.VehicleEntry.Seats, (int) data.Seat);
 
-                        if (npcEntry.VehicleEntry.Seats[data.Seat] == null)
-                        {
-                            var seatEntry = NPCMgr.GetVehicleSeatEntry(data.Seat);
-                            if (seatEntry != null)
-                                npcEntry.VehicleEntry.Seats[data.Seat] = seatEntry;
-                        }
+            		if (npcEntry.VehicleEntry.Seats[data.Seat] != null)
+            		{
+            			var npc = NPCMgr.GetEntry(data.PassengerNPCId);
+            			if (npc != null)
+            			{
+            				npcEntry.VehicleEntry.Seats[data.Seat].PassengerNPCId = data.PassengerNPCId;
+            			}
+            		}
+            	}
 
-                        var npc = NPCMgr.GetEntry(data.PassengerNPCId);
-                        if (npc != null && npcEntry.VehicleEntry.Seats[data.Seat] != null)
-                        {
-                            npcEntry.VehicleEntry.Seats[data.Seat].PassengerNPCId = data.PassengerNPCId;
-                        }
-                    }
+            	if (data.VehicleAimAdjustment != 0)
+            	{
+            		npcEntry.VehicleAimAdjustment = data.VehicleAimAdjustment;
+            	}
 
-                    if (data.VehicleAimAdjustment != 0)
-                    {
-                        npcEntry.VehicleAimAdjustment = data.VehicleAimAdjustment;
-                    }
-
-                    npcEntry.VehicleEntry.IsMinion = data.IsMinion;
-                    count++;
-                }
+            	npcEntry.VehicleEntry.IsMinion = data.IsMinion;
+            	count++;
             }
 
             Log.Info("Loaded {0} corrections from VehicleData.xml", count);
@@ -77,17 +67,48 @@ namespace WCell.Addons.Default.Vehicles
         {
             #region Frosthound
             var npcEntry = NPCMgr.GetEntry(NPCId.Frosthound);
-            if (npcEntry == null) return;
+			if (npcEntry != null)
+			{
+				var spell = SpellHandler.Get(SpellId.IceSlick);
+				if (spell != null)
+					npcEntry.AddSpell(spell);
 
-            var spell = SpellHandler.Get(SpellId.IceSlick);
-            if (spell != null)
-                npcEntry.AddSpell(spell);
+				spell = SpellHandler.Get(SpellId.CastNet_2);
+				if (spell != null)
+					npcEntry.AddSpell(spell);
+			}
 
-            spell = SpellHandler.Get(SpellId.CastNet_2);
-            if (spell != null)
-                npcEntry.AddSpell(spell);
-            #endregion
-        }
+        	#endregion
+
+			#region Wintergrasp Siege Engine
+			npcEntry = NPCMgr.GetEntry(NPCId.WintergraspSiegeEngine);
+			var ramSpell = SpellHandler.Get(SpellId.Ram_2);
+			if (npcEntry != null && ramSpell != null)
+			{
+				npcEntry.AddSpell(ramSpell);
+			}
+
+			npcEntry = NPCMgr.GetEntry(NPCId.WintergraspSiegeEngine_2);
+			if (npcEntry != null && ramSpell != null)
+			{
+				npcEntry.AddSpell(ramSpell);
+			}
+
+			npcEntry = NPCMgr.GetEntry(NPCId.WintergraspSiegeTurret);
+			var cannonSpell = SpellHandler.Get(SpellId.FireCannon_10); 
+			if (npcEntry != null && cannonSpell != null)
+			{
+				npcEntry.AddSpell(cannonSpell);
+			}
+
+			npcEntry = NPCMgr.GetEntry(NPCId.WintergraspSiegeTurret_2);
+			if (npcEntry != null && cannonSpell != null)
+			{
+				npcEntry.AddSpell(cannonSpell);
+			}
+
+        	#endregion
+		}
     }
 }
 
