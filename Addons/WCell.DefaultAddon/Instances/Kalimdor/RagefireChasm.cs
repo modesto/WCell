@@ -11,11 +11,21 @@ using WCell.RealmServer.Misc;
 using WCell.RealmServer.NPCs;
 using WCell.RealmServer.Spells;
 
+
 namespace WCell.Addons.Default.Instances
 {
 	public class RagefireChasm : BaseInstance
 	{
 		#region Setup Content
+        //Trash Mobs
+        private static NPCEntry ragefireshamanEntry;
+        private static NPCEntry ragefiretroggEntry;
+        private static NPCEntry searingbladewarlockEntry;
+        private static NPCEntry searingbladeenforcerEntry;
+        private static NPCEntry searingbladecultistEntry;
+        private static NPCEntry moltenelementalEntry;
+        private static NPCEntry earthborerEntry;
+        //Bosses
 		private static NPCEntry oggleflintEntry;
 		private static NPCEntry taragamanEntry;
 		private static NPCEntry jergoshEntry;
@@ -35,8 +45,16 @@ namespace WCell.Addons.Default.Instances
 		[Initialization]
 		[DependentInitialization(typeof(NPCMgr))]
 		public static void InitNPCs()
-		{
-//          Oggleflint
+        {
+            #region Trash Mobs
+            ragefireshamanEntry = NPCMgr.GetEntry(NPCId.RagefireShaman);
+            ragefireshamanEntry.Activated += RagefireShaman =>
+            {
+                ((BaseBrain)RagefireShaman.Brain).DefaultCombatAction.Strategy = new RFShamanAttackAction(RagefireShaman);
+            };
+            #endregion
+            #region Bosses
+            //          Oggleflint
 			oggleflintEntry = NPCMgr.GetEntry(NPCId.Oggleflint);
 			oggleflintEntry.AddSpell(SpellId.Cleave);            
 			oggleflintEntry.Activated += oggleflint =>
@@ -85,11 +103,47 @@ namespace WCell.Addons.Default.Instances
                 bazzalan.AddProcHandler(poison);
                 bazzalan.AddProcHandler(sstrike);
 			};
-		}
+            #endregion
+        }
 		#endregion
 	}
-	#region Oggleflint
-	public class OggleflintAttackAction : AIAttackAction
+    #region Trash Mob Brain
+
+    #region Ragefire Shaman
+    public class RFShamanAttackAction : AIAttackAction
+    {
+        [Initialization(InitializationPass.Second)]
+        public static void InitShamanSpells()
+        {
+            var healingwave = SpellHandler.Get(SpellId.HealingWave);
+            healingwave.AISettings.SetCooldownRange(15000);
+            healingwave.MaxTargets = 1;
+            healingwave.OverrideAITargetDefinitions(
+                DefaultTargetAdders.AddAreaSource, 									    // Adder
+                DefaultTargetEvaluators.AnyWoundedEvaluator, 							// Evaluator
+                DefaultTargetFilters.IsFriendly, DefaultTargetFilters.IsNotPlayer);		// Filters
+
+            var lightningbolt = SpellHandler.Get(SpellId.LightningBolt);
+            lightningbolt.AISettings.SetCooldownRange(8000);
+            lightningbolt.MaxTargets = 1;
+            lightningbolt.OverrideAITargetDefinitions(
+                DefaultTargetAdders.AddAreaSource, 									    // Adder
+                DefaultTargetEvaluators.RandomEvaluator, 							    // Evaluator
+                DefaultTargetFilters.IsHostile, DefaultTargetFilters.IsPlayer);		    // Filters
+        }
+
+        public RFShamanAttackAction(NPC RagefireShaman)
+            : base(RagefireShaman)
+        {
+            RagefireShaman.Spells.AddSpell(SpellId.HealingWave, SpellId.LightningBolt);
+        }
+    }
+    #endregion
+    
+    #endregion
+
+    #region Oggleflint
+    public class OggleflintAttackAction : AIAttackAction
 	{
 		public OggleflintAttackAction(NPC oggleflint)
 			: base(oggleflint)
