@@ -149,7 +149,7 @@ namespace WCell.RealmServer.Entities
 		}
 
 		/// <summary>
-		/// Wheter the Unit is allowed to attack and use physical abilities
+		/// Whether the Unit is allowed to attack and use physical abilities
 		/// </summary>
 		public bool CanDoPhysicalActivity
 		{
@@ -177,8 +177,8 @@ namespace WCell.RealmServer.Entities
 
 		/// <summary>
 		/// Whether the physical state and permissions of this Unit allows it to move.
-		/// To stop a character from moving, use IncMechanicCount to increase Rooted or any other movement-effecting Mechanic-school.
-		/// Solyly use HasPermissionToMove to take Movement-controlling (eg. owner instructions etc.) into consideration.
+		/// To control whether a unit is physically capable of moving, use IncMechanicCount/DecMechanicCount to change <see cref="SpellMechanic.Rooted">Rooted</cref> or any other movement-effecting Mechanic.
+		/// However to control it's actual desire/permission to move, use <see cref="HasPermissionToMove"/>.
 		/// </summary>
 		public bool CanMove
 		{
@@ -336,7 +336,7 @@ namespace WCell.RealmServer.Entities
 		}
 
 		/// <summary>
-		/// Increase the mechnanic modifier count for the given SpellMechanic
+        /// Increase the mechanic modifier count for the given SpellMechanic
 		/// </summary>
 		public void IncMechanicCount(SpellMechanic mechanic, bool isCustom = false)
 		{
@@ -373,6 +373,7 @@ namespace WCell.RealmServer.Entities
 						{
 							SpellCast.Cancel();
 						}
+                        StopMoving();
 					}
 
 					// interaction
@@ -382,7 +383,7 @@ namespace WCell.RealmServer.Entities
 						//UnitFlags |= UnitFlags.UnInteractable;
 					}
 
-					// harmfulnes
+					// harmfulness
 					if (m_canHarm && SpellConstants.HarmPreventionMechanics[(int)mechanic])
 					{
 						SetCanHarmState();
@@ -443,7 +444,7 @@ namespace WCell.RealmServer.Entities
 		}
 
 		/// <summary>
-		/// Decrease the mechnanic modifier count for the given SpellMechanic
+        /// Decrease the mechanic modifier count for the given SpellMechanic
 		/// </summary>
 		public void DecMechanicCount(SpellMechanic mechanic, bool isCustom = false)
 		{
