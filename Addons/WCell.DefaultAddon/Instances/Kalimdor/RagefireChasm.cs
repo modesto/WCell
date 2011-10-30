@@ -10,6 +10,7 @@ using WCell.RealmServer.Instances;
 using WCell.RealmServer.Misc;
 using WCell.RealmServer.NPCs;
 using WCell.RealmServer.Spells;
+using WCell.RealmServer.Spells.Targeting;
 
 
 namespace WCell.Addons.Default.Instances
