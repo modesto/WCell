@@ -131,7 +131,7 @@ int __cdecl buildMeshFromFile(int userId, const char* inputFilename, const char*
 							idx = tilePolyIndexOffsets[neigTile] + neiPoly;
 
 							//const dtMeshTile* t = ((const dtNavMesh*)mesh)->getTile(neigTile);
-							assert(neigTile < maxTiles-1 && idx < tilePolyIndexOffsets[neigTile+1]);
+							assert(neigTile < maxTiles-1 || idx < tilePolyIndexOffsets[neigTile+1]);
 							//idx = (unsigned int)-1;
 						}
 					}
@@ -183,23 +183,23 @@ int __cdecl buildMeshFromFile(int userId, const char* inputFilename, const char*
 }
 
 float walkableRadius = 1;
-dtNavMesh* buildMesh(InputGeom* geom, WCellBuildContext* ctx, int numCores)
+dtNavMesh* buildMesh(InputGeom* geom, WCellBuildContext* wcellContext, int numCores)
 {
-	dtNavMesh* mesh;
+	dtNavMesh* mesh = 0;
 
 	if (!geom || !geom->getMesh())
 	{
 		CleanupAfterBuild();
-		ctx->log(RC_LOG_ERROR, "buildTiledNavigation: No vertices and triangles.");
-		return false;
+		wcellContext->log(RC_LOG_ERROR, "buildTiledNavigation: No vertices and triangles.");
+		return 0;
 	}
 	
 	mesh = dtAllocNavMesh();
 	if (!mesh)
 	{
 		CleanupAfterBuild();
-		ctx->log(RC_LOG_ERROR, "buildTiledNavigation: Could not allocate navmesh.");
-		return false;
+		wcellContext->log(RC_LOG_ERROR, "buildTiledNavigation: Could not allocate navmesh.");
+		return 0;
 	}
 
 	// setup some default parameters
@@ -259,18 +259,17 @@ dtNavMesh* buildMesh(InputGeom* geom, WCellBuildContext* ctx, int numCores)
 	if (dtStatusFailed(status))
 	{
 		CleanupAfterBuild();
-		ctx->log(RC_LOG_ERROR, "buildTiledNavigation: Could not init navmesh.");
-		return false;
+		wcellContext->log(RC_LOG_ERROR, "buildTiledNavigation: Could not init navmesh.");
+		return 0;
 	}
 	
 	// start building
 	const float tcs = cfg.tileSize*cfg.cs;
-	ctx->startTimer(RC_TIMER_TEMP);
+	wcellContext->startTimer(RC_TIMER_TEMP);
 	
-	//QuadrantTiler Tiler1, Tiler2, Tiler3, Tiler4, Tiler5, Tiler6;
 	TileAdder Adder;
-	rcContext dummyCtx;
 
+	dispatcher.Reset();
 	dispatcher.maxHeight = th;
 	dispatcher.maxWidth = tw;
 
@@ -283,7 +282,7 @@ dtNavMesh* buildMesh(InputGeom* geom, WCellBuildContext* ctx, int numCores)
 		QuadrantTiler newTiler;
 		newTiler.geom = geom;
 		newTiler.cfg = cfg;
-		newTiler.ctx = ctx;
+		newTiler.ctx = *wcellContext;
 		boost::thread newThread(boost::ref(newTiler));
 		threads[i] = &newThread;
 	}
@@ -295,7 +294,7 @@ dtNavMesh* buildMesh(InputGeom* geom, WCellBuildContext* ctx, int numCores)
 	AdderThread.join();
 
 	// Start the build process.	
-	ctx->stopTimer(RC_TIMER_TEMP);
+	wcellContext->stopTimer(RC_TIMER_TEMP);
 
 	return mesh;
 }
@@ -535,7 +534,7 @@ unsigned char* buildTileMesh(const int tx, const int ty,
 
 			// The vertex indices are ushorts, and cannot point to more than 0xffff vertices.
 			ctx->log(RC_LOG_ERROR, "Too many vertices per tile %d (max: %d).", m_pmesh->nverts, 0xffff);
-			return false;
+			return 0;
 		}
 		
 		// Update poly flags from areas.
@@ -581,9 +580,9 @@ unsigned char* buildTileMesh(const int tx, const int ty,
 		params.offMeshConFlags = geom->getOffMeshConnectionFlags();
 		params.offMeshConUserID = geom->getOffMeshConnectionId();
 		params.offMeshConCount = geom->getOffMeshConnectionCount();
-		params.walkableHeight = cfg.walkableHeight;
-		params.walkableRadius = cfg.walkableRadius;
-		params.walkableClimb = cfg.walkableClimb;
+		params.walkableHeight = (float)cfg.walkableHeight;
+		params.walkableRadius = (float)cfg.walkableRadius;
+		params.walkableClimb = (float)cfg.walkableClimb;
 		params.tileX = tx;
 		params.tileY = ty;
 		params.tileLayer = 0;

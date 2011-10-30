@@ -66,7 +66,7 @@ extern "C" {
 
 class WCellBuildContext;
 
-dtNavMesh* buildMesh(InputGeom* geom, WCellBuildContext* ctx, int numCores);
+dtNavMesh* buildMesh(InputGeom* geom, WCellBuildContext* wcellContext, int numCores);
 
 unsigned char* buildTileMesh(const int tx, const int ty, 
 	const float* bmin, const float* bmax, int& dataSize,
@@ -192,6 +192,14 @@ class TileDispatcher : boost::noncopyable
 public:
 	int maxWidth, maxHeight;
 	
+	void Reset()
+	{
+		nextWidth = 0;
+		maxWidth = 0;
+		nextHeight = 0;
+		maxHeight = 0;
+	}
+
 	void GetNextNeededTile(int &x, int &y)
 	{
 		boost::mutex::scoped_lock lock(dispatchMutex);
@@ -215,10 +223,7 @@ public:
 
 	TileDispatcher()
 	{
-		nextWidth = 0;
-		maxWidth = 0;
-		nextHeight = 0;
-		maxHeight = 0;
+		Reset();
 	}
 
 private:
@@ -294,11 +299,14 @@ struct TileAdder
 	void operator()()
 	{
 		int numThreadsCompleted = 0;
+		std::cout << "Working";
 		while(numThreadsCompleted < numThreads)
 		{
 			//std::cout << "**Waiting for tile data...**\n";
 			TileData data = tileQueue.PopWait();
 			//std::cout << "**TileData found: ";
+			//Give the user some progress indicator in case of large data sets
+			std::cout << "\r" << data.X << ", " << data.Y << "    ";
 			if (data.X == INVALID_TILE && data.Y == INVALID_TILE)
 			{
 				//std::cout << "Invalid Data, one of the threads has completed**\n";
@@ -316,8 +324,8 @@ struct TileAdder
 			if (dtStatusFailed(status))
 				dtFree(data.Data);
 		}
-
-		std::cout << "All quadrants finished.\n";
+		std::cout << std::endl;
+		std::cout << "All quadrants finished" << std::endl;
 	}
 };
 
