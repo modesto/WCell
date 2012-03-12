@@ -77,6 +77,52 @@ namespace WCell.Constants.World
 
         ABNearVictoryWarning = 1955,
 
+        #region EOTS WorldStates
+        EOTSMaxResources = 2751,
+        EOTSResourcesHorde = 2750,
+        EOTSResourcesAlliance = 2749,
+        EOTSHordeBases = 2753,
+        EOTSAllianceBases = 2752,
+        
+        EOTSMageTowerUncontrolled = 2728, //1=yes, 0=no
+        EOTSMageTowerHordeContested = 2742,
+        EOTSMageTowerAllianceContested = 2741,
+        EOTSMageTowerHordeControl = 2729,
+        EOTSMageTowerAllianceControl = 2730,
+
+        EOTSFelReaverUncontrolled = 2725, //1=yes, 0=no
+        EOTSFelReaverHordeContested = 2740,
+        EOTSFelReaverAllianceContested = 2739,
+        EOTSFelReaverHordeControl = 2727,
+        EOTSFelReaverAllianceControl = 2726,
+
+        EOTSDraeneiRuinsUncontrolled = 2731, //1=yes, 0=no
+        EOTSDraeneiRuinsHordeContested = 2737,
+        EOTSDraeneiRuinsAllianceContested = 2738,
+        EOTSDraeneiRuinsHordeControl = 2733,
+        EOTSDraeneiRuinsAllianceControl = 2732,
+
+        EOTSBloodElfTowerUncontrolled = 2722, //1=yes, 0=no
+        EOTSBloodElfTowerHordeContested = 2744,
+        EOTSBloodElfTowerAllianceContested = 2743,
+        EOTSBloodElfTowerHordeControl = 2724,
+        EOTSBloodElfTowerAllianceControl = 2723,
+
+        EOTSNearVictoryWarning = 3085,
+
+        EOTSHordeStats = 2770, //(1 - show, 0 - hide) // 02 -> horde picked up the flag
+        EOTSAllianceStats = 2769, //(1 - show, 0 - hide) // 02 -> alliance picked up the flag
+
+        EOTSCaptureBarColors = 2720, //(100 -> empty (only grey), 0 -> blue|red (no grey), default 0)
+        EOTSCaptureBarStatus = 2719, //(0 - left, 100 - right)
+        EOTSCaptureBarVisable = 2718, //(1 - show, 0 - hide)
+        
+        /*2736 unk // 0 at start
+        2735 unk // 0 at start
+        2757 Flag (1 - show, 0 - hide) - doesn't work exactly this way!
+        2565 unk, constant?*/
+        #endregion
+
         AlgalonTimeToSignal = 4131,
         End
     }

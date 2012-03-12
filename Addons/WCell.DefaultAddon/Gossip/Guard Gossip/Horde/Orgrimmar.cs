@@ -5,7 +5,7 @@ using WCell.RealmServer.Gossips;
 using WCell.RealmServer.Handlers;
 using WCell.RealmServer.NPCs;
 
-namespace WCell.Addons.Default.Gossip.GuardGossip.Horde
+namespace WCell.Addons.Default.Gossip.Guard_Gossip.Horde
 {
     class Orgrimmar : GossipMenu
     {
@@ -45,7 +45,7 @@ namespace WCell.Addons.Default.Gossip.GuardGossip.Horde
                         new MultiStringGossipMenuItem(GossipMenuIcon.Train, DefaultAddonLocalizer.Instance.GetTranslations(AddonMsgKey.TrainMage),
                             convo => GossipHandler.SendGossipPOI(convo.Character, GossipPOIFlags.Six, 1451.0f, -4223.0f, 7, 7, "Darkbriar Lodge"), new GossipMenu(2560)),
                         new MultiStringGossipMenuItem(GossipMenuIcon.Train, DefaultAddonLocalizer.Instance.GetTranslations(AddonMsgKey.TrainPaladin),
-                            convo => GossipHandler.SendGossipPOI(convo.Character, GossipPOIFlags.Six, 1906.0f, -4134.0f, 7, 7, "Valley of Wisdom"), new GossipMenu(2566)),
+                            convo => GossipHandler.SendGossipPOI(convo.Character, GossipPOIFlags.Six, 1906.0f, -4134.0f, 7, 7, "Valley of Wisdom"), new GossipMenu()),
                         new MultiStringGossipMenuItem(GossipMenuIcon.Train, DefaultAddonLocalizer.Instance.GetTranslations(AddonMsgKey.TrainPriest),
                             convo => GossipHandler.SendGossipPOI(convo.Character, GossipPOIFlags.Six, 1442.0f, -4183.0f, 7, 7, "Spirit Lodge"), new GossipMenu(2561)),
                         new MultiStringGossipMenuItem(GossipMenuIcon.Train, DefaultAddonLocalizer.Instance.GetTranslations(AddonMsgKey.TrainRogue),

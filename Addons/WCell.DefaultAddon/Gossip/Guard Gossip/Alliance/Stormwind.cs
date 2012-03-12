@@ -5,7 +5,7 @@ using WCell.RealmServer.Gossips;
 using WCell.RealmServer.Handlers;
 using WCell.RealmServer.NPCs;
 
-namespace WCell.Addons.Default.Gossip.GuardGossip.Alliance
+namespace WCell.Addons.Default.Gossip.Guard_Gossip.Alliance
 {
     class Stormwind : GossipMenu
     {

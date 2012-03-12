@@ -153,6 +153,7 @@
     <Compile Include="Auth.cs" />
     <Compile Include="Battlegrounds.cs" />
     <Compile Include="Battlegrounds\ArathiBasin.cs" />
+    <Compile Include="Battlegrounds\EyeOfTheStorm.cs" />
     <Compile Include="Battlegrounds\WarsongGulch.cs" />
     <Compile Include="Calendars.cs" />
     <Compile Include="Characters.cs" />

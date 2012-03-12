@@ -128,6 +128,39 @@ namespace WCell.Constants.World
             AddState(new WorldState(MapId.ArathiBasin, WorldStateId.ABShowBlacksmithIconAllianceContested, 0));
             AddState(new WorldState(MapId.ArathiBasin, WorldStateId.ABShowBlacksmithIconHordeContested, 0));
             AddState(new WorldState(MapId.ArathiBasin, WorldStateId.ABNearVictoryWarning, 1400));
+
+            //Eye Of The Storm
+            AddState(new WorldState(MapId.EyeOfTheStorm, WorldStateId.EOTSAllianceBases, 0));
+            AddState(new WorldState(MapId.EyeOfTheStorm, WorldStateId.EOTSBloodElfTowerAllianceContested, 0));
+            AddState(new WorldState(MapId.EyeOfTheStorm, WorldStateId.EOTSBloodElfTowerAllianceControl, 0));
+            AddState(new WorldState(MapId.EyeOfTheStorm, WorldStateId.EOTSBloodElfTowerHordeContested, 0));
+            AddState(new WorldState(MapId.EyeOfTheStorm, WorldStateId.EOTSBloodElfTowerHordeControl, 0));
+            AddState(new WorldState(MapId.EyeOfTheStorm, WorldStateId.EOTSBloodElfTowerUncontrolled, 1));
+            AddState(new WorldState(MapId.EyeOfTheStorm, WorldStateId.EOTSDraeneiRuinsAllianceContested, 0));
+            AddState(new WorldState(MapId.EyeOfTheStorm, WorldStateId.EOTSDraeneiRuinsAllianceControl, 0));
+            AddState(new WorldState(MapId.EyeOfTheStorm, WorldStateId.EOTSDraeneiRuinsHordeContested, 0));
+            AddState(new WorldState(MapId.EyeOfTheStorm, WorldStateId.EOTSDraeneiRuinsHordeControl, 0));
+            AddState(new WorldState(MapId.EyeOfTheStorm, WorldStateId.EOTSDraeneiRuinsUncontrolled, 1));
+            AddState(new WorldState(MapId.EyeOfTheStorm, WorldStateId.EOTSFelReaverAllianceContested, 0));
+            AddState(new WorldState(MapId.EyeOfTheStorm, WorldStateId.EOTSFelReaverAllianceControl, 0));
+            AddState(new WorldState(MapId.EyeOfTheStorm, WorldStateId.EOTSFelReaverHordeContested, 0));
+            AddState(new WorldState(MapId.EyeOfTheStorm, WorldStateId.EOTSFelReaverHordeControl, 0));
+            AddState(new WorldState(MapId.EyeOfTheStorm, WorldStateId.EOTSFelReaverUncontrolled, 1));
+            AddState(new WorldState(MapId.EyeOfTheStorm, WorldStateId.EOTSHordeBases, 0));
+            AddState(new WorldState(MapId.EyeOfTheStorm, WorldStateId.EOTSMageTowerAllianceContested, 0));
+            AddState(new WorldState(MapId.EyeOfTheStorm, WorldStateId.EOTSMageTowerAllianceControl, 0));
+            AddState(new WorldState(MapId.EyeOfTheStorm, WorldStateId.EOTSMageTowerHordeContested, 0));
+            AddState(new WorldState(MapId.EyeOfTheStorm, WorldStateId.EOTSMageTowerHordeControl, 0));
+            AddState(new WorldState(MapId.EyeOfTheStorm, WorldStateId.EOTSMageTowerUncontrolled, 1));
+            AddState(new WorldState(MapId.EyeOfTheStorm, WorldStateId.EOTSMaxResources, 1600));
+            AddState(new WorldState(MapId.EyeOfTheStorm, WorldStateId.EOTSNearVictoryWarning, 1400));
+            AddState(new WorldState(MapId.EyeOfTheStorm, WorldStateId.EOTSResourcesAlliance, 0));
+            AddState(new WorldState(MapId.EyeOfTheStorm, WorldStateId.EOTSResourcesHorde, 0));
+            AddState(new WorldState(MapId.EyeOfTheStorm, WorldStateId.EOTSCaptureBarColors, 40));
+            AddState(new WorldState(MapId.EyeOfTheStorm, WorldStateId.EOTSCaptureBarStatus, 50));
+            AddState(new WorldState(MapId.EyeOfTheStorm, WorldStateId.EOTSCaptureBarVisable, 0));
+            AddState(new WorldState(MapId.EyeOfTheStorm, WorldStateId.EOTSAllianceStats, 1));
+            AddState(new WorldState(MapId.EyeOfTheStorm, WorldStateId.EOTSHordeStats, 1));
 		}
 		#endregion
 	}

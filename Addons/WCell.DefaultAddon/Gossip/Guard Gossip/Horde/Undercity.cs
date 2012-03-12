@@ -5,12 +5,12 @@ using WCell.RealmServer.Gossips;
 using WCell.RealmServer.Handlers;
 using WCell.RealmServer.NPCs;
 
-namespace WCell.Addons.Default.Gossip.GuardGossip.Horde
+namespace WCell.Addons.Default.Gossip.Guard_Gossip.Horde
 {
     class Undercity : GossipMenu
     {
         [Initialization]
-        [DependentInitialization(typeof (NPCMgr))]
+        [DependentInitialization(typeof(NPCMgr))]
         public static void CreateUndercityGossipMenu()
         {
             var entry = NPCMgr.GetEntry(Constants.NPCs.NPCId.KorKronOverseer);

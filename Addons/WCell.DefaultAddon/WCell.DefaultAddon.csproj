@@ -173,7 +173,12 @@
     <Compile Include="Battlegrounds\ArathiBasin\Bases\Stables.cs" />
     <Compile Include="Battlegrounds\BladesEdgeArena.cs" />
     <Compile Include="Battlegrounds\DalaranSewers.cs" />
-    <Compile Include="Battlegrounds\EyeOfTheStorm.cs" />
+    <Compile Include="Battlegrounds\EyeOfTheStorm\Bases\BloodElfTower.cs" />
+    <Compile Include="Battlegrounds\EyeOfTheStorm\Bases\DraeneiRuins.cs" />
+    <Compile Include="Battlegrounds\EyeOfTheStorm\Bases\FelReaverRuins.cs" />
+    <Compile Include="Battlegrounds\EyeOfTheStorm\Bases\MageTower.cs" />
+    <Compile Include="Battlegrounds\EyeOfTheStorm\EOTSBase.cs" />
+    <Compile Include="Battlegrounds\EyeOfTheStorm\EyeOfTheStorm.cs" />
     <Compile Include="Battlegrounds\NagrandArena.cs" />
     <Compile Include="Battlegrounds\RuinsOfLordaeron.cs" />
     <Compile Include="Battlegrounds\StrandOfTheAncients.cs" />
