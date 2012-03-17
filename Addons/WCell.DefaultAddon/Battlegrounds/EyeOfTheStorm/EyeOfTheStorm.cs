@@ -20,15 +20,15 @@ using WCell.Util.Variables;
 
 namespace WCell.Addons.Default.Battlegrounds.EyeOfTheStorm
 {
-	public class EyeOfTheStorm : Battleground
-	{
+    public class EyeOfTheStorm : Battleground
+    {
         #region Static Fields
         [Variable("EOTSMaxScore")]
-	    public static int MaxScoreDefault
-	    {
+        public static int MaxScoreDefault
+        {
             get { return Constants.World.WorldStates.GetState(WorldStateId.EOTSMaxResources).DefaultValue; }
             set { Constants.World.WorldStates.GetState(WorldStateId.EOTSMaxResources).DefaultValue = value; }
-	    }
+        }
 
         [Variable("EOTSNearVictoryScore")]
         public static int NearVictoryScoreDefault
@@ -94,7 +94,7 @@ namespace WCell.Addons.Default.Battlegrounds.EyeOfTheStorm
             }
         }
 
-	    public int HordeBaseCount 
+        public int HordeBaseCount 
         { 
             get { return WorldStates.GetInt32(WorldStateId.EOTSHordeBases); }
             set
@@ -103,7 +103,7 @@ namespace WCell.Addons.Default.Battlegrounds.EyeOfTheStorm
             }
         }
 
-	    public int AllianceBaseCount
+        public int AllianceBaseCount
         {
             get { return WorldStates.GetInt32(WorldStateId.EOTSAllianceBases); }
             set
