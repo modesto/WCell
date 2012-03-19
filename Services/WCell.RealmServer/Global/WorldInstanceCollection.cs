@@ -1,4 +1,4 @@
-﻿using System;
+﻿﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -26,7 +26,6 @@ namespace WCell.RealmServer.Global
         }
 
         #region Get
-
         /// <summary>
         /// Gets an instance
         /// </summary>
@@ -48,7 +47,7 @@ namespace WCell.RealmServer.Global
         }
 
         /// <summary>
-        ///
+        /// 
         /// </summary>
         /// <param name="map"></param>
         /// <returns></returns>
@@ -62,8 +61,10 @@ namespace WCell.RealmServer.Global
             _lck.EnterWriteLock();
             try
             {
-                // get again, to make sure that the list was not already created while the lock was being acquired
-                Instances[map.ToUInt32(null)] = instances = new TM[10];
+                // get again, to make sure that the list was not already created while the lock was being acquiredinstances = Instances.Get(map.ToUInt32(null));
+                instances = Instances.Get(map.ToUInt32(null));
+                if (instances == null)
+                    Instances[map.ToUInt32(null)] = instances = new TM[10];
             }
             finally
             {
@@ -94,8 +95,7 @@ namespace WCell.RealmServer.Global
             }
             return list;
         }
-
-        #endregion Get
+        #endregion
 
         internal void AddInstance(TE id, TM map)
         {
