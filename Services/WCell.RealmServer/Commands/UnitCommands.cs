@@ -10,7 +10,6 @@ using WCell.Util.Commands;
 namespace WCell.RealmServer.Commands
 {
     #region Kill
-
     public class KillCommand : RealmServerCommand
     {
         protected KillCommand() { }
@@ -29,7 +28,7 @@ namespace WCell.RealmServer.Commands
                 target = target.Target;
                 if (target == null)
                 {
-                    trigger.Reply("Invalid Target.");
+                    trigger.Reply("Invalid target.");
                     return;
                 }
             }
@@ -46,11 +45,9 @@ namespace WCell.RealmServer.Commands
             }
         }
     }
-
-    #endregion Kill
+    #endregion
 
     #region Resurrect
-
     public class ResurrectCommand : RealmServerCommand
     {
         protected ResurrectCommand() { }
@@ -75,11 +72,9 @@ namespace WCell.RealmServer.Commands
             get { return ObjectTypeCustom.Unit; }
         }
     }
-
-    #endregion Resurrect
+    #endregion
 
     #region Health
-
     public class HealthCommand : RealmServerCommand
     {
         protected HealthCommand() { }
@@ -107,11 +102,9 @@ namespace WCell.RealmServer.Commands
             get { return ObjectTypeCustom.Unit; }
         }
     }
-
-    #endregion Health
+    #endregion
 
     #region Resurrect
-
     public class RaceCommand : RealmServerCommand
     {
         protected RaceCommand() { }
@@ -150,11 +143,9 @@ namespace WCell.RealmServer.Commands
             }
         }
     }
-
-    #endregion Resurrect
+    #endregion
 
     #region Invul
-
     public class InvulModeCommand : RealmServerCommand
     {
         protected InvulModeCommand() { }
@@ -182,11 +173,9 @@ namespace WCell.RealmServer.Commands
             }
         }
     }
-
-    #endregion Invul
+    #endregion
 
     #region Talking
-
     public class SayCommand : RealmServerCommand
     {
         protected SayCommand() { }
@@ -240,6 +229,5 @@ namespace WCell.RealmServer.Commands
             }
         }
     }
-
-    #endregion Talking
+    #endregion
 }

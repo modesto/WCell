@@ -18,12 +18,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using NLog;
-using WCell.Constants;
 using WCell.Constants.Items;
 using WCell.Constants.Looting;
 using WCell.Constants.NPCs;
 using WCell.Constants.Quests;
 using WCell.Constants.Updates;
+using WCell.Constants;
 using WCell.Core;
 using WCell.RealmServer.Database;
 using WCell.RealmServer.Entities;
@@ -91,7 +91,6 @@ namespace WCell.RealmServer.Quests
         }
 
         #region Properties
-
         /// <summary>
         /// Gets the timed quest.
         /// Every Character is only allowed to solve one timed Quest at a time (makes sense doesn't it?)
@@ -152,6 +151,7 @@ namespace WCell.RealmServer.Quests
             get { return m_Owner; }
         }
 
+
         /// <summary>
         /// Determines whether the amount of active Quests is less than the maximum amount of Quests.
         /// </summary>
@@ -185,8 +185,7 @@ namespace WCell.RealmServer.Quests
         {
             get { return m_RequireItemsQuests; }
         }
-
-        #endregion Properties
+        #endregion
 
         #region Add/Remove
 
@@ -281,6 +280,10 @@ namespace WCell.RealmServer.Quests
                     QuestHandler.SendQuestInvalid(m_Owner, QuestInvalidReason.NoRequiredItems);
                     return null;
                 }
+                if (!qt.CastInitialSpell(m_Owner))
+                {
+                    //This should always return true
+                }
             }
 
             if ((qt.TimeLimit > 0) && m_timedQuest == null)
@@ -340,8 +343,9 @@ namespace WCell.RealmServer.Quests
             return quest;
         }
 
+
         /// <summary>
-        ///
+        /// 
         /// </summary>
         /// <param name="id"></param>
         /// <returns>Whether any Quest was cancelled</returns>
@@ -450,7 +454,7 @@ namespace WCell.RealmServer.Quests
         }
 
         /// <summary>
-        /// Adds the given Quest (if not already existing) marks it as completed
+        /// Adds the given Quest (if not already existing) marks it as completed 
         /// and offers the reward to the user.
         /// Does nothing and returns null if all Quest slots are currently used.
         /// </summary>
@@ -470,8 +474,7 @@ namespace WCell.RealmServer.Quests
         //    quest.OfferReward(m_Owner);
         //    return quest;
         //}
-
-        #endregion Add/Remove
+        #endregion
 
         #region Checks/Getters
 
@@ -562,7 +565,7 @@ namespace WCell.RealmServer.Quests
         }
 
         /// <summary>
-        /// Gets the QuestGiver with the given guid from the current Map (in case of a <see cref="WorldObject"/>) or
+        /// Gets the QuestGiver with the given guid from the current Map (in case of a <see cref="WorldObject"/>) or 
         /// Inventory (in case of an <see cref="Item">Item</see>)
         /// </summary>
         /// <param name="guid"></param>
@@ -586,11 +589,9 @@ namespace WCell.RealmServer.Quests
 
             return holder;
         }
-
-        #endregion Checks/Getters
+        #endregion
 
         #region Repeatable Quests
-
         /// <summary>
         /// Resets the daily quest count. Needs to be called in midnight (servertime) or when character logs in after the midnight
         /// </summary>
@@ -601,12 +602,11 @@ namespace WCell.RealmServer.Quests
 
         //public void UpdateQuest(byte slot)
         //{
-        //}
 
-        #endregion Repeatable Quests
+        //}
+        #endregion
 
         #region NPCs
-
         /// <summary>
         /// Is called when the owner of this QuestLog did
         /// the required interaction with the given NPC (usually killing)
@@ -625,9 +625,9 @@ namespace WCell.RealmServer.Quests
                         {
                             UpdateInteractionCount(quest, interaction, npc);
                         }
-                        for (i = 0; i < UnitConstants.MaxKillCredits; i++)
+                        for (var j = 0; j < UnitConstants.MaxKillCredits; j++)
                         {
-                            if (interaction.TemplateId.Contains(npc.Entry.KillCreditIds[i]))
+                            if (interaction.TemplateId.Contains(npc.Entry.KillCreditIds[j]))
                             {
                                 UpdateInteractionCount(quest, interaction, npc);
                             }
@@ -656,11 +656,9 @@ namespace WCell.RealmServer.Quests
             }
             return null;
         }
-
-        #endregion NPCs
+        #endregion
 
         #region Object Quests
-
         /// <summary>
         /// Is called when the owner of this QuestLog used the given GameObject
         /// </summary>
@@ -683,7 +681,7 @@ namespace WCell.RealmServer.Quests
             }
         }
 
-        private void UpdateInteractionCount(Quest quest, QuestInteractionTemplate interaction, WorldObject obj)
+        void UpdateInteractionCount(Quest quest, QuestInteractionTemplate interaction, WorldObject obj)
         {
             var count = quest.Interactions[interaction.Index];
             if (count < interaction.Amount)
@@ -733,11 +731,9 @@ namespace WCell.RealmServer.Quests
             // check if it can contain quest loot
             return go.ContainsQuestItemsFor(Owner, LootEntryType.GameObject);
         }
-
-        #endregion Object Quests
+        #endregion
 
         #region Item Quests
-
         /// <summary>
         /// Is called when the owner of this QuestLog receives or looses the given amount of Items
         /// </summary>
@@ -845,11 +841,9 @@ namespace WCell.RealmServer.Quests
             }
             return false;
         }
-
-        #endregion Item Quests
+        #endregion
 
         #region Spell Casts
-
         internal void OnSpellCast(SpellCast cast)
         {
             if (m_RequireSpellCastsQuests.Count > 0)
@@ -888,11 +882,9 @@ namespace WCell.RealmServer.Quests
                 }
             }
         }
-
-        #endregion Spell Casts
+        #endregion
 
         #region Save
-
         public void SaveQuests()
         {
             for (var i = 0; i < MaxQuestCount; i++)
@@ -903,13 +895,11 @@ namespace WCell.RealmServer.Quests
                 }
             }
         }
-
-        #endregion Save
+        #endregion
 
         #region Load
-
         /// <summary>
-        /// If we want this method to be public,
+        /// If we want this method to be public, 
         /// it should update all Quests correctly (remove non-existant ones etc)
         /// </summary>
         internal void Load()
@@ -950,11 +940,9 @@ namespace WCell.RealmServer.Quests
                 }
             }
         }
-
-        #endregion Load
+        #endregion
 
         #region Remove
-
         /// <summary>
         /// Removes the given quest from the list of finished quests
         /// </summary>
@@ -969,16 +957,14 @@ namespace WCell.RealmServer.Quests
             }
             return false;
         }
+        #endregion
 
-        #endregion Remove
 
         #region Quest interaction
-
         public bool CanGiveQuestTo(Character chr)
         {
             return chr.IsAlliedWith(Owner); // since 3.0 you can share quests within any range
         }
-
-        #endregion Quest interaction
+        #endregion
     }
 }

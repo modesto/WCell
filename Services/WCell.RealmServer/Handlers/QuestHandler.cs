@@ -30,7 +30,7 @@ namespace WCell.RealmServer.Handlers
 {
     /// <summary>
     /// Sequence in Quest packets upon completion:
-    ///
+    /// 
     /// CMSG_QUESTGIVER_COMPLETE_QUEST
     /// SMSG_QUESTGIVER_OFFER_REWARD
     /// CMSG_QUESTGIVER_REQUEST_REWARD
@@ -38,18 +38,17 @@ namespace WCell.RealmServer.Handlers
     /// SMSG_QUESTGIVER_QUEST_DETAILS
     /// CMSG_QUESTGIVER_CHOOSE_REWARD
     /// CMSG_QUESTGIVER_STATUS_MULTIPLE_QUERY
-    ///
+    /// 
     /// or:
     /// CMSG_QUESTGIVER_COMPLETE_QUEST
     /// SMSG_QUESTGIVER_QUEST_COMPLETE
     /// CMSG_QUESTGIVER_CHOOSE_REWARD
     /// CMSG_QUESTGIVER_STATUS_MULTIPLE_QUERY
-    ///
+    /// 
     /// </summary>
     public static class QuestHandler
     {
         #region FINISHED
-
         /// <summary>
         /// Handles the quest confirm accept.
         /// </summary>
@@ -139,8 +138,7 @@ namespace WCell.RealmServer.Handlers
         {
             GossipHandler.SendConversationComplete(client.ActiveCharacter);
         }
-
-        #endregion FINISHED
+        #endregion
 
         /// <summary>
         /// Handles the quest query.
@@ -259,7 +257,6 @@ namespace WCell.RealmServer.Handlers
 +    data.put<uint32>(0, count);
 +    SendPacket(&data);
 +}*/
-
         [ClientPacketHandler(RealmServerOpCode.SMSG_QUERY_QUESTS_COMPLETED)]
         public static void HandleQuestCompletedQuery(IRealmClient client, RealmPacketIn packet)
         {
@@ -267,7 +264,6 @@ namespace WCell.RealmServer.Handlers
         }
 
         #region Packet sending
-
         public static void SendQuestCompletedQueryResponse(Character chr)
         {
             using (var packet = new RealmPacketOut(RealmServerOpCode.SMSG_QUERY_QUESTS_COMPLETED_RESPONSE, 4))
@@ -326,6 +322,7 @@ namespace WCell.RealmServer.Handlers
             }
         }
 
+
         /// <summary>
         /// Sends the quest update failed timer.
         /// </summary>
@@ -342,7 +339,7 @@ namespace WCell.RealmServer.Handlers
         }
 
         /// <summary>
-        /// Sends the quest update add kill, this should actually cover both GameObject interaction
+        /// Sends the quest update add kill, this should actually cover both GameObject interaction 
         /// together with killing the objectBase.
         /// </summary>
         /// <param name="quest">The QST.</param>
@@ -413,7 +410,14 @@ namespace WCell.RealmServer.Handlers
                 }
                 pckt.Write(qt.MoneyAtMaxLevel);
                 pckt.Write((uint)qt.CastSpell);
-                pckt.Write((uint)qt.RewSpell);
+                if (qt.RewSpell > 0)
+                {
+                    pckt.Write((uint)qt.RewSpell);
+                }
+                else
+                {
+                    pckt.Write((uint)qt.RewSpellCast);
+                }
 
                 pckt.Write(qt.RewHonorAddition);
                 pckt.WriteFloat(qt.RewHonorMultiplier);										// since 3.3
@@ -559,6 +563,7 @@ namespace WCell.RealmServer.Handlers
                 pckt.WriteCString(qt.Details.Localize(locale));
                 pckt.WriteCString(qt.Instructions.Localize(locale));
 
+
                 pckt.Write((byte)(acceptable ? 1 : 0));			// doesn't work
                 pckt.WriteUInt((uint)qt.Flags);
                 pckt.WriteUInt(qt.SuggestedPlayers);
@@ -619,7 +624,14 @@ namespace WCell.RealmServer.Handlers
 
                 pckt.Write(qt.RewHonorAddition);
                 pckt.Write(qt.RewHonorMultiplier);						// since 3.3
-                pckt.Write((uint)qt.RewSpell);
+                if (qt.RewSpell > 0)
+                {
+                    pckt.Write((uint)qt.RewSpell);
+                }
+                else
+                {
+                    pckt.Write((uint)qt.RewSpellCast);
+                }
                 pckt.Write((uint)qt.CastSpell);
                 pckt.Write((uint)qt.RewardTitleId);		// since 2.4.0
                 pckt.Write(qt.RewardTalents);
@@ -730,7 +742,14 @@ namespace WCell.RealmServer.Handlers
                 pckt.Write(qt.RewHonorMultiplier); // since 3.3
 
                 pckt.Write((uint)0x08); // unused by client
-                pckt.Write((uint)qt.RewSpell);
+                if (qt.RewSpell > 0)
+                {
+                    pckt.Write((uint)qt.RewSpell);
+                }
+                else
+                {
+                    pckt.Write((uint)qt.RewSpellCast);
+                }
                 pckt.Write((uint)qt.CastSpell);
                 pckt.Write((uint)qt.RewardTitleId);
                 pckt.Write(qt.RewardTalents); // reward talents
@@ -846,6 +865,7 @@ namespace WCell.RealmServer.Handlers
             {
                 pckt.Write(qt.Id);
 
+
                 if (chr.Level >= RealmServerConfiguration.MaxCharacterLevel)
                 {
                     pckt.Write(0u);
@@ -942,7 +962,7 @@ namespace WCell.RealmServer.Handlers
             }
         }
 
-        #endregion Packet sending
+        #endregion
 
         /// <summary>
         /// Handles CMSG_QUESTGIVER_CHOOSE_REWARD.
@@ -1055,6 +1075,7 @@ namespace WCell.RealmServer.Handlers
             client.ActiveCharacter.FindAndSendAllNearbyQuestGiverStatuses();
         }
 
+
         #region UNFINISHED
 
         [ClientPacketHandler(RealmServerOpCode.CMSG_PUSHQUESTTOPARTY)]
@@ -1066,6 +1087,7 @@ namespace WCell.RealmServer.Handlers
 
             if (qt != null && qt.Sharable)
             {
+
                 var qst = client.ActiveCharacter.QuestLog.GetActiveQuest(qt.Id);
                 if (qst != null)
                 {
@@ -1114,6 +1136,7 @@ namespace WCell.RealmServer.Handlers
                             SendDetails(client.ActiveCharacter, qt, chr, true);
                         });
                     }
+
                 }
             }
         }
@@ -1134,10 +1157,9 @@ namespace WCell.RealmServer.Handlers
             }
         }
 
-        #endregion UNFINISHED
+        #endregion
 
         #region Unknown Structure of Packets, which are probably not used
-
         /// <summary>
         /// Handles the quest log swap quest.
         /// </summary>
@@ -1156,7 +1178,7 @@ namespace WCell.RealmServer.Handlers
         [ClientPacketHandler(RealmServerOpCode.CMSG_QUESTGIVER_QUEST_AUTOLAUNCH)]
         public static void HandleQuestGiverQueryAutoLaunch(IRealmClient client, RealmPacketIn packet)
         {
-            //is it used?
+            //is it used? 
         }
 
         [ClientPacketHandler(RealmServerOpCode.CMSG_FLAG_QUEST)]
@@ -1185,8 +1207,7 @@ namespace WCell.RealmServer.Handlers
                 client.Send(pkt);
             }
         }
-
-        #endregion Unknown Structure of Packets, which are probably not used
+        #endregion
 
         /// <summary>
         /// Finds and sends all surrounding QuestGiver's current Quest-Status to the given Character

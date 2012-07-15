@@ -46,7 +46,6 @@ namespace WCell.RealmServer.Commands
         }
 
         #region GetNPCSpawnEntry
-
         public static NPCSpawnEntry GetNPCSpawnEntry(CmdTrigger<RealmServerCmdArgs> trigger, bool closest, out Map map)
         {
             var target = trigger.Args.Target;
@@ -131,11 +130,9 @@ namespace WCell.RealmServer.Commands
             }
             return entry;
         }
-
-        #endregion GetNPCSpawnEntry
+        #endregion
 
         #region Add
-
         public class AddNPCCommand : SubCommand
         {
             protected override void Initialize()
@@ -218,11 +215,9 @@ namespace WCell.RealmServer.Commands
                 }
             }
         }
-
-        #endregion Add
+        #endregion
 
         #region Spawn
-
         public class NPCSpawnCommand : SubCommand
         {
             protected override void Initialize()
@@ -257,11 +252,9 @@ namespace WCell.RealmServer.Commands
                 trigger.Reply("Created spawn: {0}", spawnEntry);
             }
         }
-
-        #endregion Spawn
+        #endregion
 
         #region Goto
-
         public class NPCGotoCommand : SubCommand
         {
             protected override void Initialize()
@@ -287,11 +280,9 @@ namespace WCell.RealmServer.Commands
                 trigger.Reply("Created spawn: {0}", spawnEntry);
             }
         }
-
-        #endregion Goto
+        #endregion
 
         #region Select
-
         public class SelectNPCCommand : SubCommand
         {
             protected override void Initialize()
@@ -407,11 +398,9 @@ namespace WCell.RealmServer.Commands
                 );
             }
         }
-
-        #endregion Select
+        #endregion
 
         #region Flags
-
         public class FlagsNPCCommand : SubCommand
         {
             protected override void Initialize()
@@ -454,16 +443,16 @@ namespace WCell.RealmServer.Commands
 
                 // add message to iterate and then reply
                 rgn.ExecuteInContext(() =>
-                                         {
-                                             foreach (var obj in rgn)
-                                             {
-                                                 if (obj is NPC && (name == "" || obj.Name.ContainsIgnoreCase(name)))
-                                                 {
-                                                     npc = (NPC)obj;
-                                                     break;
-                                                 }
-                                             }
-                                         });
+                {
+                    foreach (var obj in rgn)
+                    {
+                        if (obj is NPC && (name == "" || obj.Name.ContainsIgnoreCase(name)))
+                        {
+                            npc = (NPC)obj;
+                            break;
+                        }
+                    }
+                });
 
                 if (npc == null)
                 {
@@ -507,11 +496,9 @@ namespace WCell.RealmServer.Commands
                 }
             }
         }
-
-        #endregion Flags
+        #endregion
 
         #region Selectable
-
         public class SelectableNPCCommand : RealmServerCommand
         {
             protected override void Initialize()
@@ -529,6 +516,7 @@ namespace WCell.RealmServer.Commands
                     trigger.Reply("Instances are currently not supported.");
                     return;
                 }
+
 
                 // add message to iterate and then reply
                 rgn.ExecuteInContext(() =>
@@ -552,12 +540,10 @@ namespace WCell.RealmServer.Commands
                 }
             }
         }
-
-        #endregion Selectable
+        #endregion
     }
 
     #region Respawn
-
     public class RespawnCommand : RealmServerCommand
     {
         protected override void Initialize()
@@ -582,11 +568,9 @@ namespace WCell.RealmServer.Commands
             get { return ObjectTypeCustom.All; }
         }
     }
-
-    #endregion Respawn
+    #endregion
 
     #region Vehicle
-
     public class VehicleCommand : RealmServerCommand
     {
         protected override void Initialize()
@@ -620,11 +604,9 @@ namespace WCell.RealmServer.Commands
             }
         }
     }
-
-    #endregion Vehicle
+    #endregion
 
     #region Spawn
-
     //public class SpawnCommand : RealmServerCommand
     //{
     //    protected override void Initialize()
@@ -655,7 +637,7 @@ namespace WCell.RealmServer.Commands
     //            var target = targetObj as NPC;
     //            if (target == null)
     //            {
-    //                trigger.Reply("Invalid Target.");
+    //                trigger.Reply("Invalid target.");
     //                return;
     //            }
 
@@ -695,7 +677,7 @@ namespace WCell.RealmServer.Commands
     //            var target = targetObj as NPC;
     //            if (target == null)
     //            {
-    //                trigger.Reply("Invalid Target.");
+    //                trigger.Reply("Invalid target.");
     //                return;
     //            }
 
@@ -710,13 +692,12 @@ namespace WCell.RealmServer.Commands
     //        }
     //    }
     //}
-
-    #endregion Spawn
+    #endregion
 
     #region Control
-
     public class ControlCommand : RealmServerCommand
     {
+
         protected override void Initialize()
         {
             Init("Control", "Enslave");
@@ -756,13 +737,12 @@ namespace WCell.RealmServer.Commands
             get { return true; }
         }
     }
-
-    #endregion Control
+    #endregion
 
     #region MakeWild
-
     public class MakeWildCommand : RealmServerCommand
     {
+
         protected override void Initialize()
         {
             Init("MakeWild");
@@ -802,13 +782,12 @@ namespace WCell.RealmServer.Commands
             get { return true; }
         }
     }
-
-    #endregion MakeWild
+    #endregion
 
     #region Abandon
-
     public class AbandonCommand : RealmServerCommand
     {
+
         protected override void Initialize()
         {
             Init("Abandon");
@@ -843,6 +822,5 @@ namespace WCell.RealmServer.Commands
             }
         }
     }
-
-    #endregion Abandon
+    #endregion
 }

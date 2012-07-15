@@ -70,7 +70,7 @@ namespace WCell.RealmServer.Quests
         public uint Id;
 
         /// <summary>
-        /// Determines whether quest is active or not.
+        /// Determines whether quest is active or not. 
         /// </summary>
         public QuestTemplateStatus IsActive = QuestTemplateStatus.Active;
 
@@ -80,7 +80,7 @@ namespace WCell.RealmServer.Quests
         public uint Level, MinLevel;
 
         /// <summary>
-        ///
+        /// 
         /// </summary>
         public int Category;
 
@@ -107,7 +107,7 @@ namespace WCell.RealmServer.Quests
         public uint SuggestedPlayers;
 
         /// <summary>
-        ///
+        /// 
         /// </summary>
         public FactionReputationEntry ObjectiveMinReputation;
 
@@ -124,7 +124,7 @@ namespace WCell.RealmServer.Quests
         /// 10    = 10 copper
         /// 100   = 1 silver
         /// 1000  = 10 silver
-        /// 10000 = 1 gold
+        /// 10000 = 1 gold 
         /// </summary>
         public int RewMoney;
 
@@ -134,17 +134,22 @@ namespace WCell.RealmServer.Quests
         public uint MoneyAtMaxLevel;
 
         /// <summary>
-        /// Given spell id, which is added to character's spell book when finishing the quest.
+        /// Cast spell id of spell which shown to be cast on character when finishing the quest.
         /// </summary>
         public SpellId RewSpell;
 
         /// <summary>
-        /// Cast spell id of spell which is casted on character when finishing the quest.
+        /// Cast spell id of spell which is cast on character when finishing the quest.
+        /// </summary>
+        public SpellId RewSpellCast;
+
+        /// <summary>
+        /// Cast spell id of spell which is casted on character when starting the quest.
         /// </summary>
         public SpellId CastSpell;
 
         /// <summary>
-        ///
+        /// 
         /// </summary>
         [NotPersistent]
         public uint BonusHonor;
@@ -160,11 +165,11 @@ namespace WCell.RealmServer.Quests
         public QuestFlags Flags;
 
         /// <summary>
-        ///
+        /// 
         /// </summary>
         public TitleId RewardTitleId;
 
-        /*
+        /* 
         public uint PlayerKillCount;
         */
 
@@ -263,7 +268,7 @@ namespace WCell.RealmServer.Quests
         }
 
         ///<summary>
-        /// Text which is displayed in quest objectives window once all objectives are completed
+        /// Text which is displayed in quest objectives window once all objectives are completed 
         /// </summary>
         [Persistent((int)ClientLocale.End)]
         public string[] CompletedTexts;
@@ -339,7 +344,7 @@ namespace WCell.RealmServer.Quests
         [NotPersistent]
         public List<uint> EventIds = new List<uint>();
 
-        #endregion QuestRoot
+        #endregion
 
         #region QuestSettings
 
@@ -368,7 +373,7 @@ namespace WCell.RealmServer.Quests
         }
 
         /// <summary>
-        /// Text which will be shown when the objectives aren't done yet. In the
+        /// Text which will be shown when the objectives aren't done yet. In the 
         /// window where you have to have items.
         /// </summary>
         [Persistent((int)ClientLocale.End)]
@@ -398,7 +403,7 @@ namespace WCell.RealmServer.Quests
         [NotPersistent]
         public List<ItemStackDescription> ProvidedItems = new List<ItemStackDescription>(1);
 
-        #endregion QuestSettings
+        #endregion
 
         #region QuestRequirements
 
@@ -430,25 +435,21 @@ namespace WCell.RealmServer.Quests
         /// Represents the Reward XP column id.
         /// </summary>
         public int RewXPId;
-
-        #endregion QuestRequirements
+        #endregion
 
         #region Graph
-
         // Represents the Quest graph
         public int PreviousQuestId, NextQuestId, ExclusiveGroup;
         public uint FollowupQuestId;
 
         /// <summary>
-        ///
+        /// 
         /// </summary>
 #pragma warning disable 0675
-
         public bool ShouldBeConnectedInGraph
         {
             get { return (PreviousQuestId | NextQuestId | ExclusiveGroup | FollowupQuestId) != 0; }
         }
-
 #pragma warning restore
 
         /// <summary>
@@ -481,7 +482,7 @@ namespace WCell.RealmServer.Quests
         [NotPersistent]
         public readonly List<uint> ReqUndoneQuests = new List<uint>(2);
 
-        #endregion Graph
+        #endregion
 
         #region QuestObjectives
 
@@ -495,11 +496,9 @@ namespace WCell.RealmServer.Quests
         /// Number of players to kill
         /// </summary>
         public uint PlayersSlain;
-
-        #endregion QuestObjectives
+        #endregion
 
         #region QuestRewards
-
         /// <summary>
         /// Array of <see href="ReputationReward">ReputationRewards</see>
         /// </summary>
@@ -512,11 +511,9 @@ namespace WCell.RealmServer.Quests
         /// Multiplier of reward honor
         /// </summary>
         public float RewHonorMultiplier;
-
-        #endregion QuestRewards
+        #endregion
 
         #region QuestEmotes
-
         public uint OfferRewardEmoteDelay;
         public EmoteType OfferRewardEmoteType;
 
@@ -531,7 +528,7 @@ namespace WCell.RealmServer.Quests
         [Persistent(QuestConstants.MaxEmotes)]
         public EmoteTemplate[] OfferRewardEmotes = new EmoteTemplate[4];
 
-        #endregion QuestEmotes
+        #endregion
 
         /// <summary>
         /// Value indicating whether this <see cref="QuestTemplate"/> is shareable.
@@ -550,7 +547,6 @@ namespace WCell.RealmServer.Quests
         }
 
         #region Modify Templates
-
         /// <summary>
         /// To finish this Quest the Character has to interact with the given
         /// kind of GO the given amount of times. This is a unique interaction.
@@ -757,10 +753,9 @@ namespace WCell.RealmServer.Quests
             return NPCInteractions.FirstOrDefault(interaction => interaction.TemplateId.Contains((uint)npcId));
         }
 
-        #endregion Modify Templates
+        #endregion
 
         #region Requirements
-
         /// <summary>
         /// Checks whether the given Character may do this Quest
         /// </summary>
@@ -930,11 +925,9 @@ namespace WCell.RealmServer.Quests
         {
             return chr.Level + QuestMgr.LevelRequirementOffset < RequiredLevel;
         }
-
-        #endregion Requirements
+        #endregion
 
         #region Status
-
         /// <summary>
         /// Checks the requirements and returns the QuestStatus for ending a Quest.
         /// </summary>
@@ -1004,16 +997,15 @@ namespace WCell.RealmServer.Quests
             return quest.Status;
         }
 
-        #endregion Status
+        #endregion
 
         #region QuestScripts
 
         // nothing yet
 
-        #endregion QuestScripts
+        #endregion
 
         #region Starters and Finishers
-
         /// <summary>
         /// Returns the GOEntry with the given id or null
         /// </summary>
@@ -1127,11 +1119,9 @@ namespace WCell.RealmServer.Quests
             }
             return default(T);
         }
-
-        #endregion Starters and Finishers
+        #endregion
 
         #region Interactions
-
         /// <summary>
         /// Tries to give all Initial Items (or none at all).
         /// </summary>
@@ -1148,6 +1138,19 @@ namespace WCell.RealmServer.Quests
                     ItemHandler.SendInventoryError(receiver.Client, null, null, err);
                     return false;
                 }
+            }
+            return true;
+        }
+
+        /// <summary>
+        /// Tries to cast the Initial Spell
+        /// </summary>
+        /// <returns>Always returns true.</returns>
+        public bool CastInitialSpell(Character receiver)
+        {
+            if (CastSpell != SpellId.None)
+            {
+                receiver.SpellCast.TriggerSelf(CastSpell);
             }
             return true;
         }
@@ -1225,9 +1228,9 @@ namespace WCell.RealmServer.Quests
                 receiver.SetTitle(RewardTitleId, false);
             }
 
-            if (CastSpell != SpellId.None)
+            if (RewSpellCast != SpellId.None)
             {
-                receiver.SpellCast.TriggerSelf(CastSpell);
+                receiver.SpellCast.TriggerSelf(RewSpellCast);
             }
             return true;
         }
@@ -1296,10 +1299,9 @@ namespace WCell.RealmServer.Quests
             return fullxp / 10;
         }
 
-        #endregion Interactions
+        #endregion
 
         #region Dump
-
         public void Dump(IndentTextWriter writer)
         {
             //writer.WriteLine(this);
@@ -1342,12 +1344,12 @@ namespace WCell.RealmServer.Quests
             }
         }
 
-        private string MakeQuestString(IEnumerable<uint> questIds)
+        string MakeQuestString(IEnumerable<uint> questIds)
         {
             return Utility.GetStringRepresentation(questIds.Select(QuestMgr.GetTemplate));
         }
 
-        #endregion Dump
+        #endregion
 
         public override string ToString()
         {
@@ -1355,7 +1357,6 @@ namespace WCell.RealmServer.Quests
         }
 
         #region Events
-
         internal void NotifyStarted(Quest quest)
         {
             var evt = QuestStarted;
@@ -1400,8 +1401,7 @@ namespace WCell.RealmServer.Quests
                 evt(quest, go);
             }
         }
-
-        #endregion Events
+        #endregion
 
         public static IEnumerable<QuestTemplate> GetAllDataHolders()
         {
@@ -1409,7 +1409,6 @@ namespace WCell.RealmServer.Quests
         }
 
         #region Deserialization
-
         public void FinalizeDataHolder()
         {
             if (ReqSkillOrClass > 0)
@@ -1537,8 +1536,7 @@ namespace WCell.RealmServer.Quests
 
             QuestMgr.AddQuest(this);
         }
-
-        #endregion Deserialization
+        #endregion
     }
 
     /// <summary>

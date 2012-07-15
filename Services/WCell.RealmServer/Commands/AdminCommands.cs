@@ -19,7 +19,6 @@ using WCell.Util.Threading;
 namespace WCell.RealmServer.Commands
 {
     #region Shutdown
-
     public class ShutdownCommand : RealmServerCommand
     {
         protected ShutdownCommand() { }
@@ -53,11 +52,9 @@ namespace WCell.RealmServer.Commands
             }
         }
     }
-
-    #endregion Shutdown
+    #endregion
 
     #region Broadcast
-
     public class BroadcastCommand : RealmServerCommand
     {
         protected BroadcastCommand() { }
@@ -75,11 +72,9 @@ namespace WCell.RealmServer.Commands
             World.Broadcast(prefix + trigger.Text.Remainder);
         }
     }
-
-    #endregion Broadcast
+    #endregion
 
     #region Kick
-
     public class KickCommand : RealmServerCommand
     {
         protected KickCommand() { }
@@ -133,17 +128,15 @@ namespace WCell.RealmServer.Commands
                 // optional reason
                 var reason = trigger.Text.Remainder.Trim();
 
-                // kick:
+                // kick: 
                 // Sits the char down and renders him/her unable to do anything for the given delay, after which he/she gets disconnected
                 chr.Kick(trigger.Args.User, reason, delay);
             }
         }
     }
-
-    #endregion Kick
+    #endregion
 
     #region Ban
-
     public class BanCommand : RealmServerCommand
     {
         protected BanCommand() { }
@@ -171,7 +164,7 @@ namespace WCell.RealmServer.Commands
             }
             if (chr == null || ReferenceEquals(chr, banner))
             {
-                trigger.Reply("Invalid Target.");
+                trigger.Reply("Invalid target.");
                 return;
             }
 
@@ -225,11 +218,9 @@ namespace WCell.RealmServer.Commands
             }));
         }
     }
-
-    #endregion Ban
+    #endregion
 
     #region SetRole
-
     public class SetRoleCommand : RealmServerCommand
     {
         protected SetRoleCommand() { }
@@ -297,11 +288,9 @@ namespace WCell.RealmServer.Commands
             }
         }
     }
-
-    #endregion SetRole
+    #endregion
 
     #region Global
-
     public class GlobalCommand : RealmServerCommand
     {
         public override RoleStatus RequiredStatusDefault
@@ -351,13 +340,12 @@ namespace WCell.RealmServer.Commands
                 }
             },
             () => trigger.Reply("Done. - Called Command on {0} Characters.", chrCount));
+
         }
     }
-
-    #endregion Global
+    #endregion
 
     #region Cache
-
     public class CacheCommand : RealmServerCommand
     {
         protected override void Initialize()
@@ -381,13 +369,11 @@ namespace WCell.RealmServer.Commands
             }
         }
     }
-
-    #endregion Cache
+    #endregion
 
     #region Variables
-
     /// <summary>
-    ///
+    /// 
     /// </summary>
     public class ConfigCommand : RealmServerCommand
     {
@@ -424,7 +410,7 @@ namespace WCell.RealmServer.Commands
         }
 
         /// <summary>
-        ///
+        /// 
         /// </summary>
         public class GetGlobalCommand : SubCommand
         {
@@ -448,7 +434,7 @@ namespace WCell.RealmServer.Commands
         }
 
         /// <summary>
-        ///
+        /// 
         /// </summary>
         public class ListGlobalsCommand : SubCommand
         {
@@ -472,7 +458,7 @@ namespace WCell.RealmServer.Commands
         }
 
         /// <summary>
-        ///
+        /// 
         /// </summary>
         public class SaveConfigCommand : SubCommand
         {
@@ -497,7 +483,7 @@ namespace WCell.RealmServer.Commands
         }
 
         /// <summary>
-        ///
+        /// 
         /// </summary>
         public class LoadConfigCommand : SubCommand
         {
@@ -521,11 +507,9 @@ namespace WCell.RealmServer.Commands
             }
         }
     }
-
-    #endregion Variables
+    #endregion
 
     #region AuthServer
-
     public class AuthRemoteCommand : RealmServerCommand
     {
         public override RoleStatus RequiredStatusDefault
@@ -569,11 +553,9 @@ namespace WCell.RealmServer.Commands
             }
         }
     }
-
-    #endregion AuthServer
+    #endregion
 
     #region Exceptions
-
     public class ExceptionCommand : RealmServerCommand
     {
         public override RoleStatus RequiredStatusDefault
@@ -689,11 +671,9 @@ namespace WCell.RealmServer.Commands
         //    }
         //}
     }
-
-    #endregion Exceptions
+    #endregion
 
     #region IPC
-
     public class RealmIPCCommand : RealmServerCommand
     {
         protected override void Initialize()
@@ -749,11 +729,9 @@ namespace WCell.RealmServer.Commands
             //base.Process(trigger);
         }
     }
-
-    #endregion IPC
+    #endregion
 
     #region Log
-
     public class LogCommand : RealmServerCommand
     {
         protected LogCommand() { }
@@ -780,7 +758,6 @@ namespace WCell.RealmServer.Commands
         }
 
         #region Logging Level
-
         public class ToggleLevelCommand : SubCommand
         {
             protected ToggleLevelCommand() { }
@@ -812,14 +789,11 @@ namespace WCell.RealmServer.Commands
                 }
             }
         }
-
-        #endregion Logging Level
+        #endregion
     }
-
-    #endregion Log
+    #endregion
 
     #region Dump
-
     public class DumpThreadPoolInfoCommand : RealmServerCommand
     {
         protected DumpThreadPoolInfoCommand() { }
@@ -922,6 +896,5 @@ namespace WCell.RealmServer.Commands
             trigger.Reply("[Buffers] {0} allocated globally", WCellUtil.FormatBytes(totalAllocMemory));
         }
     }
-
-    #endregion Dump
+    #endregion
 }
