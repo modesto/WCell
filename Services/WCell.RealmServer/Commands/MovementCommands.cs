@@ -1,822 +1,520 @@
+/*************************************************************************
+ *
+ *   file		: MovementCommands.cs
+ *   copyright		: (C) The WCell Team
+ *   email		: info@wcell.org
+ *   last changed	: $LastChangedDate: 2010-02-01 14:22:25 +0100 (ma, 01 feb 2010) $
+
+ *   revision		: $Rev: 1240 $
+ *
+ *   This program is free software; you can redistribute it and/or modify
+ *   it under the terms of the GNU General Public License as published by
+ *   the Free Software Foundation; either version 2 of the License, or
+ *   (at your option) any later version.
+ *
+ *************************************************************************/
+
 using System;
 using System.Linq;
-using System.Threading;
-using Cell.Core;
-using NLog;
+using WCell.Constants.Spells;
 using WCell.Constants.Updates;
-using WCell.Core;
-using WCell.Intercommunication.DataTypes;
-using WCell.RealmServer.Content;
+using WCell.Constants.World;
 using WCell.RealmServer.Entities;
 using WCell.RealmServer.Global;
+using WCell.RealmServer.Handlers;
 using WCell.RealmServer.Lang;
-using WCell.RealmServer.Misc;
-using WCell.RealmServer.Network;
-using WCell.RealmServer.Privileges;
 using WCell.Util.Commands;
-using WCell.Util.Threading;
+using WCell.Util.Graphics;
 
 namespace WCell.RealmServer.Commands
 {
-    #region Shutdown
-    public class ShutdownCommand : RealmServerCommand
+    #region Fly
+    public class FlyCommand : RealmServerCommand
     {
-        protected ShutdownCommand() { }
+        protected FlyCommand() { }
 
-        public override RoleStatus RequiredStatusDefault
+        protected override void Initialize()
+        {
+            base.Init("Fly");
+            EnglishParamInfo = "[0/1]";
+            EnglishDescription = "Toggles flying mode";
+        }
+
+        public override void Process(CmdTrigger<RealmServerCmdArgs> trigger)
+        {
+            bool flying = (trigger.Text.HasNext && trigger.Text.NextBool()) || (trigger.Args.Target.Flying == 0);
+            if (flying)
+            {
+                trigger.Args.Target.Flying++;
+            }
+            else
+            {
+                trigger.Args.Target.Flying = 0;
+            }
+            trigger.Reply("Flying " + (flying ? "on" : "off"));
+        }
+
+
+        public override ObjectTypeCustom TargetTypes
+        {
+            get { return ObjectTypeCustom.All; }
+        }
+    }
+    #endregion
+
+    #region Knockback
+    public class KnockbackCommand : RealmServerCommand
+    {
+        protected KnockbackCommand() { }
+
+        protected override void Initialize()
+        {
+            base.Init("Knockback");
+            EnglishParamInfo = "<verticalSpeed> [<horizontalSpeed>]";
+            EnglishDescription = "Knocks the target back";
+        }
+
+        public override void Process(CmdTrigger<RealmServerCmdArgs> trigger)
+        {
+            var vertSpeed = trigger.Text.NextFloat();
+            var horSpeed = trigger.Text.NextFloat(vertSpeed);
+            MovementHandler.SendKnockBack(trigger.Args.Character, trigger.Args.Target, vertSpeed, horSpeed);
+        }
+
+        public override ObjectTypeCustom TargetTypes
+        {
+            get { return ObjectTypeCustom.Player; }
+        }
+    }
+    #endregion
+
+    #region Speed
+    public class MultiplySpeedCommand : RealmServerCommand
+    {
+        protected MultiplySpeedCommand() { }
+
+        protected override void Initialize()
+        {
+            Init("MultiplySpeed", "SpeedFactor", "MultSpeed", "Speed");
+            EnglishParamInfo = "<speedFactor>";
+            EnglishDescription = "Sets the overall speed-factor of a Unit";
+        }
+
+        public override void Process(CmdTrigger<RealmServerCmdArgs> trigger)
+        {
+            var factor = trigger.Text.NextFloat(1);
+            if (factor > 0.01)
+            {
+                trigger.Args.Target.SpeedFactor = factor;
+                trigger.Reply("SpeedFactor set to: " + factor);
+            }
+            else
+            {
+                trigger.Reply("The argument must be a positive number");
+            }
+        }
+
+
+        public override ObjectTypeCustom TargetTypes
+        {
+            get { return ObjectTypeCustom.All; }
+        }
+    }
+    #endregion
+
+    #region Waterwalk
+    public class WaterWalkCommand : RealmServerCommand
+    {
+        protected WaterWalkCommand() { }
+
+        protected override void Initialize()
+        {
+            base.Init("WaterWalk", "WalkWater");
+            EnglishParamInfo = "[0/1]";
+            EnglishDescription = "Toggles the ability to walk on water";
+        }
+
+        public override void Process(CmdTrigger<RealmServerCmdArgs> trigger)
+        {
+            bool waterWalk = (trigger.Text.HasNext && trigger.Text.NextBool()) || (trigger.Args.Target.WaterWalk == 0);
+            if (waterWalk)
+            {
+                trigger.Args.Target.WaterWalk++;
+            }
+            else
+            {
+                trigger.Args.Target.WaterWalk = 0;
+            }
+            trigger.Reply("WaterWalking " + (waterWalk ? "on" : "off"));
+        }
+
+
+
+        public override ObjectTypeCustom TargetTypes
         {
             get
             {
-                return RoleStatus.Admin;
-            }
-        }
-
-        protected override void Initialize()
-        {
-            Init("Shutdown");
-            EnglishParamInfo = "[<delay before shutdown in seconds>]";
-            EnglishDescription = "Shuts down the server after the given delay (default = 10s). " +
-                "Once started, calling this command again will cancel the shutdown-sequence.";
-        }
-
-        public override void Process(CmdTrigger<RealmServerCmdArgs> trigger)
-        {
-            if (RealmServer.IsPreparingShutdown)
-            {
-                RealmServer.Instance.CancelShutdown();
-            }
-            else
-            {
-                var delay = trigger.Text.NextUInt(10);
-                RealmServer.Instance.ShutdownIn(delay * 1000);
+                return ObjectTypeCustom.All;
             }
         }
     }
     #endregion
 
-    #region Broadcast
-    public class BroadcastCommand : RealmServerCommand
+    #region Rooted
+    public class RootedCommand : RealmServerCommand
     {
-        protected BroadcastCommand() { }
+        protected RootedCommand() { }
 
         protected override void Initialize()
         {
-            Init("Broadcast");
-            EnglishParamInfo = "<text>";
-            EnglishDescription = "Broadcasts the given text throughout the world.";
+            Init("Rooted", "Root");
+            EnglishParamInfo = "[0/1]";
+            EnglishDescription = "Toggles whether the Unit can move or not";
         }
 
         public override void Process(CmdTrigger<RealmServerCmdArgs> trigger)
         {
-            var prefix = trigger.Args.User != null ? trigger.Args.User.Name + ": " : "";
-            World.Broadcast(prefix + trigger.Text.Remainder);
-        }
-    }
-    #endregion
+            var newState = (trigger.Text.HasNext && trigger.Text.NextBool()) ||
+                (!trigger.Text.HasNext && trigger.Args.Target.CanMove);
 
-    #region Kick
-    public class KickCommand : RealmServerCommand
-    {
-        protected KickCommand() { }
-
-        protected override void Initialize()
-        {
-            Init("Kick", "Boot");	// the aliases for this command
-            EnglishParamInfo = "[-n <name>][-d <seconds>] [<reason>]";
-            EnglishDescription = "Kicks your current target with an optional delay in seconds (default: 20 - can be 0) and an optional reason.";
-        }
-
-        public override void Process(CmdTrigger<RealmServerCmdArgs> trigger)
-        {
-            if (trigger is IngameCmdTrigger && trigger.Args.Target == trigger.Args.Character)
+            if (newState)
             {
-                // make sure you don't kick yourself by accident
-                trigger.Reply("You cannot kick yourself.");
+                trigger.Args.Target.IncMechanicCount(SpellMechanic.Rooted);
             }
             else
             {
-                var chr = trigger.Args.Target as Character;
-
-                var mod = trigger.Text.NextModifiers();
-                if (chr == null)
-                {
-                    if (!mod.Contains("n") || !trigger.Text.HasNext)
-                    {
-                        trigger.Reply(RealmLangKey.CmdKickMustProvideName);
-                        return;
-                    }
-                    else
-                    {
-                        var name = trigger.Text.NextWord();
-                        chr = World.GetCharacter(name, false);
-                        if (chr == null)
-                        {
-                            trigger.Reply(RealmLangKey.PlayerNotOnline, name);
-                            return;
-                        }
-                    }
-                }
-
-                var delay = Character.DefaultLogoutDelayMillis;
-
-                // check for different delay
-                if (mod.Contains("d"))
-                {
-                    delay = trigger.Text.NextInt(delay) * 1000;
-                }
-
-                // optional reason
-                var reason = trigger.Text.Remainder.Trim();
-
-                // kick: 
-                // Sits the char down and renders him/her unable to do anything for the given delay, after which he/she gets disconnected
-                chr.Kick(trigger.Args.User, reason, delay);
+                trigger.Args.Target.DecMechanicCount(SpellMechanic.Rooted);
             }
-        }
-    }
-    #endregion
-
-    #region Ban
-    public class BanCommand : RealmServerCommand
-    {
-        protected BanCommand() { }
-
-        public override RoleStatus RequiredStatusDefault
-        {
-            get { return RoleStatus.Admin; }
-        }
-
-        protected override void Initialize()
-        {
-            Init("Ban");
-            EnglishParamInfo = "[-[smhdw] [<seconds>] [<minutes>] [<hours>] [<days>] [<weeks>]]";
-            EnglishDescription = "Deactivates the given Account. Reactivation time can optionally also be specified.";
-        }
-
-        public override void Process(CmdTrigger<RealmServerCmdArgs> trigger)
-        {
-            var chr = trigger.Args.Target as Character;
-            var banner = trigger.Args.User;
-
-            if (chr != null && ReferenceEquals(chr, banner))
-            {
-                chr = chr.Target as Character;
-            }
-            if (chr == null || ReferenceEquals(chr, banner))
-            {
-                trigger.Reply("Invalid target.");
-                return;
-            }
-
-            if (banner != null && chr.Role >= banner.Role)
-            {
-                trigger.Reply("Cannot ban Users of higher or equal Rank.");
-                return;
-            }
-
-            var time = trigger.Text.NextTimeSpan();
-
-            DateTime? until;
-            if (time != null)
-            {
-                until = DateTime.Now + time;
-            }
-            else
-            {
-                until = null;
-            }
-
-            var timeStr = until != null ? ("until " + until) : "(indefinitely)";
-            trigger.Reply("Banning Account {0} ({1}) {2}...", chr.Account.Name, chr.Name,
-                timeStr);
-
-            RealmServer.IOQueue.AddMessage(new Message(() =>
-            {
-                var context = chr.ContextHandler;
-                var acc = chr.Account;
-                if (acc == null || context == null)
-                {
-                    trigger.Reply("Character logged off.");
-                    return;
-                }
-
-                if (acc.SetAccountActive(false, until))
-                {
-                    context.AddMessage(() =>
-                    {
-                        if (chr.IsInWorld)
-                        {
-                            chr.Kick(banner, "Banned " + timeStr, 5);
-                        }
-                        trigger.Reply("Done.");
-                    });
-                }
-                else
-                {
-                    trigger.Reply("Could not ban Account.");
-                }
-            }));
-        }
-    }
-    #endregion
-
-    #region SetRole
-    public class SetRoleCommand : RealmServerCommand
-    {
-        protected SetRoleCommand() { }
-
-        public override RoleStatus RequiredStatusDefault
-        {
-            get
-            {
-                return RoleStatus.Admin;
-            }
-        }
-
-        protected override void Initialize()
-        {
-            Init("SetRole", "Role", "SetPriv");
-            EnglishParamInfo = "<RoleName>";
-            EnglishDescription = "Sets the Account's Role which determines the User's rights and privileges.";
-        }
-
-        public override void Process(CmdTrigger<RealmServerCmdArgs> trigger)
-        {
-            var user = trigger.Args.User;
-            var roleName = trigger.Text.NextWord();
-            var role = PrivilegeMgr.Instance.GetRole(roleName);
-            if (role == null)
-            {
-                trigger.Reply("Role \"{0}\" does not exist.", roleName);
-            }
-            else if (user != null && user.Role <= role && user.Role < RoleGroupInfo.HighestRole.Rank)
-            {
-                trigger.Reply("You are not allowed to set the \"{0}\"-Role.", role.Name);
-                return;
-            }
-            else
-            {
-                var chr = ((Character)trigger.Args.Target);
-                var oldRole = chr.Account.Role;
-
-                // Since setting the role is a task sent to the Auth-Server, this is a blocking call
-                // and thus must not be executed within the Map context (which is the default context for Commands)
-                RealmServer.IOQueue.AddMessage(new Message(() =>
-                {
-                    if (chr.Account.SetRole(role))
-                    {
-                        chr.SendSystemMessage("You Role has changed from {0} to {1}.", oldRole, role.Name);
-                        trigger.Reply("{0}'s Account's ({1}) Role has changed from {2} to: {3}",
-                            chr.Name,
-                            chr.Account,
-                            oldRole,
-                            role);
-                    }
-                    else
-                    {
-                        trigger.Reply("Role information could not be saved.");
-                    }
-                }));
-            }
+            trigger.Reply((newState ? "R" : "Unr") + "ooted ");
         }
 
         public override ObjectTypeCustom TargetTypes
         {
             get
             {
-                return ObjectTypeCustom.Player;
+                return ObjectTypeCustom.All;
             }
         }
     }
     #endregion
 
-    #region Global
-    public class GlobalCommand : RealmServerCommand
+    #region Stunned
+    public class StunnededCommand : RealmServerCommand
     {
-        public override RoleStatus RequiredStatusDefault
-        {
-            get
-            {
-                return RoleStatus.Admin;
-            }
-        }
+        protected StunnededCommand() { }
 
         protected override void Initialize()
         {
-            Init("Global");
-            EnglishParamInfo = "[-pi] <command + command args>";
-            EnglishDescription = "Executes the given command on everyone ingame. Use carefully! " +
-                "-p Only on Players (exclude staff members). " +
-                "-i Include self";
+            Init("Stunned", "Stun");
+            EnglishParamInfo = "[0/1]";
+            EnglishDescription = "Toggles whether the Unit is stunned or not";
+        }
+
+        public override void Process(CmdTrigger<RealmServerCmdArgs> trigger)
+        {
+            var newState = (trigger.Text.HasNext && trigger.Text.NextBool()) ||
+                (!trigger.Text.HasNext && trigger.Args.Target.CanMove);
+
+            if (newState)
+            {
+                trigger.Args.Target.IncMechanicCount(SpellMechanic.Stunned);
+            }
+            else
+            {
+                trigger.Args.Target.DecMechanicCount(SpellMechanic.Stunned);
+            }
+            trigger.Reply((newState ? "S" : "Uns") + "tunned ");
+        }
+
+        public override ObjectTypeCustom TargetTypes
+        {
+            get
+            {
+                return ObjectTypeCustom.All;
+            }
+        }
+    }
+    #endregion
+
+    #region Teleport
+    public class TeleportCommand : RealmServerCommand
+    {
+        protected TeleportCommand() { }
+
+        protected override void Initialize()
+        {
+            Init("Tele", "Teleport");
+            EnglishParamInfo = "[-c [<x> <y> <z> [<MapName or Id>]]] | [<LocationName>]";
+            EnglishDescription = "Teleports to the given location or shows a list of all places that match the given name. " +
+                "-c teleports to the given coordinates instead. ";
+        }
+
+        public override void Process(CmdTrigger<RealmServerCmdArgs> trigger)
+        {
+            if (!trigger.Text.HasNext)
+            {
+                trigger.Reply("Invalid position. Usage: " + EnglishParamInfo);
+                return;
+            }
+
+            var target = trigger.Args.Target;
+            var mod = trigger.Text.NextModifiers();
+            if (mod == "c")
+            {
+                float? o = null;
+                Map map = null;
+
+                var x = trigger.Text.NextFloat(-50001);
+                var y = trigger.Text.NextFloat(-50001);
+                var z = trigger.Text.NextFloat(-50001);
+
+                if (trigger.Text.HasNext)
+                {
+                    var mapId = trigger.Text.NextEnum(MapId.End);
+                    map = World.GetNonInstancedMap(mapId);
+                    if (map == null)
+                    {
+                        trigger.Reply("Invalid map: " + mapId);
+                        return;
+                    }
+                }
+
+                if (x < -50000 || y < -50000 || z < -50000)
+                {
+                    trigger.Reply("Invalid position. Usage: " + EnglishParamInfo);
+                    return;
+                }
+                if (map == null)
+                {
+                    map = trigger.Args.Character.Map;
+                }
+
+                var pos = new Vector3(x, y, z);
+                trigger.Args.Target.TeleportTo(map, ref pos, o);
+            }
+            else
+            {
+                // Named Teleport Location
+                var targetName = trigger.Text.Remainder;
+
+                if (trigger.Args.Character != null)
+                {
+                    // TODO: Use localization
+                    var locs = WorldLocationMgr.GetMatches(targetName);
+
+                    if (locs.Count == 0)
+                    {
+                        trigger.Reply("No matches found for: " + targetName);
+                        return;
+                    }
+                    else
+                    {
+                        if (locs.Count == 1)
+                        {
+                            target.TeleportTo(locs[0]);
+                        }
+                        else
+                        {
+                            var perfectMatch = locs.FirstOrDefault(loc => loc.DefaultName.Equals(targetName, StringComparison.InvariantCultureIgnoreCase));
+                            if (perfectMatch != null)
+                            {
+                                target.TeleportTo(perfectMatch);
+                            }
+                            else
+                            {
+                                trigger.Args.Character.StartGossip(WorldLocationMgr.CreateTeleMenu(locs));
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    var loc = WorldLocationMgr.GetFirstMatch(targetName);
+                    if (loc != null)
+                    {
+                        target.TeleportTo(loc);
+                    }
+                    else
+                    {
+                        trigger.Reply("No matches found for: " + targetName);
+                    }
+                }
+
+                // var loc = WorldLocationMgr.GetFirstMatch(targetName);
+                //if (loc != null)
+                //{
+                //    var map = World.GetMap(loc.MapId);
+                //    trigger.Args.Target.TeleportTo(map, loc.Position);
+                //}
+                //else
+                //{
+                //    trigger.Reply("Teleport failed - Invalid location: " + targetName);
+                //}
+            }
+        }
+
+        public override ObjectTypeCustom TargetTypes
+        {
+            get { return ObjectTypeCustom.Unit; }
+        }
+    }
+    #endregion
+
+    #region GoTo
+    public class GoToCommand : RealmServerCommand
+    {
+        protected override void Initialize()
+        {
+            Init("GoTo");
+            EnglishParamInfo = "<targetname>";
+            EnglishDescription =
+                "Teleports the Target to Character/Unit/GameObject. If Unit or GO are specified, target will be teleported to the nearest one [NYI].";
+        }
+
+        public override void Process(CmdTrigger<RealmServerCmdArgs> trigger)
+        {
+            var targetName = trigger.Text.NextWord();
+            WorldObject target = null;
+            if (targetName.Length > 0)
+            {
+                //if (mod == "c")
+                //{
+                target = World.GetCharacter(targetName, false);
+                //}
+                //else
+                //{
+                //    trigger.Reply("Modifier \"{0}\" is currently not supported.", mod);
+                //    // TODO: Units and GOs
+                //    //if (mod == "u")
+                //    //{
+
+                //    //}
+                //}
+            }
+
+            if (target == null)
+            {
+                trigger.Reply("Invalid target: " + targetName);
+            }
+            else
+            {
+                trigger.Args.Target.TeleportTo(target);
+            }
+        }
+    }
+    #endregion
+
+    #region Summon All
+    public class SummonAllCommand : RealmServerCommand
+    {
+        protected SummonAllCommand() { }
+
+        protected override void Initialize()
+        {
+            Init("SummonAll");
+            EnglishParamInfo = "[-f]";
+            EnglishDescription = "Summons all online players. -f switch will summon players instantly, not giving them a choice.";
         }
 
         public override void Process(CmdTrigger<RealmServerCmdArgs> trigger)
         {
             var mod = trigger.Text.NextModifiers();
-            var cmd = RealmCommandHandler.Instance.GetCommand(trigger);
-            if (cmd == null || !cmd.Enabled ||
-                (trigger.Args.User != null && !trigger.Args.User.Role.MayUse(cmd.RootCmd)))
-            {
-                trigger.Reply("Invalid Command.");
-                return;
-            }
+            var force = mod.Contains("f");
 
-            var chrTrigger = trigger.Silent(new RealmServerCmdArgs(trigger.Args));
-            var playersOnly = mod.Contains("p");
-            var inclSelf = mod.Contains("i");
-
-            var chrCount = 0;
-            World.CallOnAllChars(chr =>
+            foreach (var chr in World.GetAllCharacters())
             {
-                if (chr.Role <= trigger.Args.Role)
+                if (chr == trigger.Args.Target)
                 {
-                    if ((!playersOnly || chr.Role.Status == RoleStatus.Player) &&
-                        (inclSelf || !object.ReferenceEquals(chr, trigger.Args.User)))
-                    {
-                        chrTrigger.Args.Target = chr;
-                        RealmCommandHandler.Instance.Execute(chrTrigger, cmd, true);
-                        chrCount++;
-                    }
+                    continue;
                 }
-            },
-            () => trigger.Reply("Done. - Called Command on {0} Characters.", chrCount));
 
-        }
-    }
-    #endregion
-
-    #region Cache
-    public class CacheCommand : RealmServerCommand
-    {
-        protected override void Initialize()
-        {
-            Init("Cache");
-            EnglishDescription = "Provides commands to manage the server-side cache of static data.";
-        }
-
-        public class PurgeCacheCommand : SubCommand
-        {
-            protected override void Initialize()
-            {
-                Init("Purge");
-                EnglishDescription = "Removes all cache-files.";
-            }
-
-            public override void Process(CmdTrigger<RealmServerCmdArgs> trigger)
-            {
-                ContentMgr.PurgeCache();
-                trigger.Reply("Done.");
-            }
-        }
-    }
-    #endregion
-
-    #region Variables
-    /// <summary>
-    /// 
-    /// </summary>
-    public class ConfigCommand : RealmServerCommand
-    {
-        protected override void Initialize()
-        {
-            Init("Config", "Cfg");
-            EnglishDescription = "Provides commands to manage the Configuration.";
-        }
-
-        public override RoleStatus RequiredStatusDefault
-        {
-            get { return RoleStatus.Admin; }
-        }
-
-        public class SetGlobalCommand : SubCommand
-        {
-            protected SetGlobalCommand() { }
-
-            protected override void Initialize()
-            {
-                Init("Set", "S");
-                EnglishParamInfo = "<globalVar> <value>";
-                EnglishDescription = "Sets the value of the given global variable.";
-            }
-
-            public override void Process(CmdTrigger<RealmServerCmdArgs> trigger)
-            {
-                var cfg = CommandUtil.GetConfig(RealmServerConfiguration.Instance, trigger);
-                if (cfg != null)
+                if (!force || chr.Role > trigger.Args.Character.Role)
                 {
-                    CommandUtil.SetCfgValue(cfg, trigger);
-                }
-            }
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public class GetGlobalCommand : SubCommand
-        {
-            protected GetGlobalCommand() { }
-
-            protected override void Initialize()
-            {
-                Init("Get", "G");
-                EnglishParamInfo = "<globalVar>";
-                EnglishDescription = "Gets the value of the given global variable.";
-            }
-
-            public override void Process(CmdTrigger<RealmServerCmdArgs> trigger)
-            {
-                var cfg = CommandUtil.GetConfig(RealmServerConfiguration.Instance, trigger);
-                if (cfg != null)
-                {
-                    CommandUtil.GetCfgValue(cfg, trigger);
-                }
-            }
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public class ListGlobalsCommand : SubCommand
-        {
-            protected ListGlobalsCommand() { }
-
-            protected override void Initialize()
-            {
-                Init("List", "L");
-                EnglishParamInfo = "[<name Part>]";
-                EnglishDescription = "Lists all global variables. If specified only shows variables that contain the given name Part.";
-            }
-
-            public override void Process(CmdTrigger<RealmServerCmdArgs> trigger)
-            {
-                var cfg = CommandUtil.GetConfig(RealmServerConfiguration.Instance, trigger);
-                if (cfg != null)
-                {
-                    CommandUtil.ListCfgValues(cfg, trigger);
-                }
-            }
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public class SaveConfigCommand : SubCommand
-        {
-            protected SaveConfigCommand() { }
-
-            protected override void Initialize()
-            {
-                Init("Save");
-                EnglishParamInfo = "";
-                EnglishDescription = "Saves the current configuration.";
-            }
-
-            public override void Process(CmdTrigger<RealmServerCmdArgs> trigger)
-            {
-                var cfg = CommandUtil.GetConfig(RealmServerConfiguration.Instance, trigger);
-                if (cfg != null)
-                {
-                    cfg.Save(true, false);
-                    trigger.Reply("Done.");
-                }
-            }
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public class LoadConfigCommand : SubCommand
-        {
-            protected LoadConfigCommand() { }
-
-            protected override void Initialize()
-            {
-                Init("Load");
-                EnglishParamInfo = "";
-                EnglishDescription = "Loads the configuration again.";
-            }
-
-            public override void Process(CmdTrigger<RealmServerCmdArgs> trigger)
-            {
-                var cfg = CommandUtil.GetConfig(RealmServerConfiguration.Instance, trigger);
-                if (cfg != null)
-                {
-                    cfg.Load();
-                    trigger.Reply("Done.");
-                }
-            }
-        }
-    }
-    #endregion
-
-    #region AuthServer
-    public class AuthRemoteCommand : RealmServerCommand
-    {
-        public override RoleStatus RequiredStatusDefault
-        {
-            get { return RoleStatus.Admin; }
-        }
-
-        protected override void Initialize()
-        {
-            Init("AuthRemote", "Auth");
-            EnglishParamInfo = "<Command <args>>";
-            EnglishDescription = "Executes a command on the AuthServer.";
-        }
-
-        public override void Process(CmdTrigger<RealmServerCmdArgs> trigger)
-        {
-            if (RealmServer.Instance.AuthClient.Channel == null || !RealmServer.Instance.AuthClient.IsConnected)
-            {
-                trigger.Reply("Connection to AuthServer is currently not established.");
-                return;
-            }
-
-            var response = RealmServer.Instance.AuthClient.Channel.ExecuteCommand(trigger.Text.Remainder);
-            if (response != null)
-            {
-                if (response.Replies.Count > 0)
-                {
-                    foreach (var reply in response.Replies)
-                    {
-                        trigger.Reply(reply);
-                    }
+                    chr.StartSummon(trigger.Args.Character);
                 }
                 else
                 {
-                    trigger.Reply("Done.");
+                    chr.TeleportTo(trigger.Args.Target.Map, trigger.Args.Target.Position);
+                    chr.Orientation = trigger.Args.Target.Orientation;
                 }
-            }
-            else
-            {
-                trigger.Reply("Failed to execute remote-command.");
-            }
-        }
-    }
-    #endregion
-
-    #region Exceptions
-    public class ExceptionCommand : RealmServerCommand
-    {
-        public override RoleStatus RequiredStatusDefault
-        {
-            get { return RoleStatus.Admin; }
-        }
-
-        protected override void Initialize()
-        {
-            Init("Exception", "Excep");
-        }
-
-        public class ListExceptionCommand : SubCommand
-        {
-            protected override void Initialize()
-            {
-                Init("List", "L");
-                EnglishParamInfo = "[<match>]";
-            }
-
-            public override void Process(CmdTrigger<RealmServerCmdArgs> trigger)
-            {
-                var match = trigger.Text.Remainder;
-
-                var count = 0;
-                for (var i = 0; i < ExceptionHandler.Exceptions.Count; i++)
-                {
-                    var ex = ExceptionHandler.Exceptions[i];
-                    if (match.Length == 0 || ex.ToString().IndexOf(match, StringComparison.InvariantCultureIgnoreCase) > -1)
-                    {
-                        ++count;
-                    }
-                }
-
-                if (count == 0)
-                {
-                    trigger.Reply("No Exceptions have been triggered so far.");
-                }
-                else
-                {
-                    trigger.Reply("Found {0} Exceptions:", count);
-                    for (var i = 0; i < ExceptionHandler.Exceptions.Count; i++)
-                    {
-                        var ex = ExceptionHandler.Exceptions[i];
-                        if (match.Length == 0 || ex.ToString().IndexOf(match, StringComparison.InvariantCultureIgnoreCase) > -1)
-                        {
-                            trigger.Reply("{0}. {1}", i + 1, ex);
-                        }
-                    }
-                }
-            }
-        }
-
-        public class ShowExceptionCommand : SubCommand
-        {
-            protected override void Initialize()
-            {
-                Init("Show", "S");
-                EnglishParamInfo = "[<index>]";
-                EnglishDescription = "If no index is given, will show the last Exception.";
-            }
-
-            public override void Process(CmdTrigger<RealmServerCmdArgs> trigger)
-            {
-                var index = trigger.Text.NextUInt(uint.MaxValue);
-
-                ExceptionInfo excep;
-                if (index >= ExceptionHandler.Exceptions.Count)
-                {
-                    excep = ExceptionHandler.Exceptions.LastOrDefault();
-                }
-                else
-                {
-                    excep = ExceptionHandler.Exceptions[(int)index];
-                }
-
-                if (excep != null)
-                {
-                    trigger.Reply(excep + (excep.Exception.StackTrace == null ? " (No StackTrace available)" : ""));
-                    if (excep.Exception.StackTrace != null)
-                    {
-                        var lines = excep.Exception.StackTrace.Split('\n');
-                        foreach (var line in lines)
-                        {
-                            trigger.Reply(" " + line.Trim());
-                        }
-                    }
-                }
-                else
-                {
-                    trigger.Reply("Invalid index specified.");
-                }
-            }
-        }
-
-        //public class ThrowExceptionCommand : SubCommand
-        //{
-        //    protected override void Initialize()
-        //    {
-        //        Init("Throw");
-        //    }
-
-        //    public override void Process(CmdTrigger<RealmServerCmdArgs> trigger)
-        //    {
-        //        try
-        //        {
-        //            throw new Exception("TEST EXCEPTION");
-        //        }
-        //        catch (Exception e)
-        //        {
-        //            LogUtil.ErrorException(e);
-        //        }
-        //    }
-        //}
-    }
-    #endregion
-
-    #region IPC
-    public class RealmIPCCommand : RealmServerCommand
-    {
-        protected override void Initialize()
-        {
-            Init("IPC");
-            EnglishParamInfo = "[0/1]";
-            //Description = "Provides commands to manage the IPC-device that connects Realm- and Auth-Server. Use -0 to turn it off and -1 to turn it on.";
-            EnglishDescription = "Toggles the IPC-device that connects Realm- and Auth-Server.";
-        }
-
-        public override RoleStatus RequiredStatusDefault
-        {
-            get
-            {
-                return RoleStatus.Admin;
-            }
-        }
-
-        public override bool RequiresCharacter
-        {
-            get
-            {
-                return false;
             }
         }
 
         public override ObjectTypeCustom TargetTypes
         {
-            get
-            {
-                return ObjectTypeCustom.None;
-            }
-        }
-
-        public override void Process(CmdTrigger<RealmServerCmdArgs> trigger)
-        {
-            //var mods = trigger.Text.NextModifiers();
-            bool run;
-            if (trigger.Text.HasNext)
-            {
-                run = trigger.Text.NextBool();
-            }
-            else
-            {
-                // toggle
-                run = !RealmServer.Instance.AuthClient.IsRunning;
-            }
-
-            RealmServer.Instance.AuthClient.IsRunning = run;
-
-            //trigger.Reply("Done. - IPC-Client is now {0}.", run ? "Online" : "Offline");
-            trigger.Reply("Done.");
-            //base.Process(trigger);
+            get { return ObjectTypeCustom.All; }
         }
     }
     #endregion
 
-    #region Log
-    public class LogCommand : RealmServerCommand
+    #region Summon Single Player
+    public class SummonPlayerCommand : RealmServerCommand
     {
-        protected LogCommand() { }
+        protected SummonPlayerCommand() { }
 
         protected override void Initialize()
         {
-            base.Init("Log");
-            EnglishDescription = "Gets and sets logging settings.";
+            Init("Summon");
+            EnglishParamInfo = "[-aq] <name>";
+            EnglishDescription = "Summons the Player with the given name. " +
+                "-q will queries Player before teleporting (can be denied). " +
+                "-a switch will use the account name instead of the Char-name.";
         }
 
-        public override RoleStatus RequiredStatusDefault
+        public override void Process(CmdTrigger<RealmServerCmdArgs> trigger)
         {
-            get { return RoleStatus.Admin; }
-        }
-
-        public override bool RequiresCharacter
-        {
-            get { return false; }
-        }
-
-        public override ObjectTypeCustom TargetTypes
-        {
-            get { return ObjectTypeCustom.None; }
-        }
-
-        #region Logging Level
-        public class ToggleLevelCommand : SubCommand
-        {
-            protected ToggleLevelCommand() { }
-
-            protected override void Initialize()
+            if (!trigger.Text.HasNext)
             {
-                base.Init("ToggleLevel", "Level", "Lvl", "TL");
-                EnglishParamInfo = "<Trace|Debug|Info|Warn|Error|Fatal> [<1/0>]";
-                EnglishDescription = "Globally toggles whether messages of the corresponding level should be logged (to console, as well as to file or any other target that is specified).";
+                trigger.Reply("You need to specify the name of the Player to be summoned.");
             }
-
-            public override void Process(CmdTrigger<RealmServerCmdArgs> trigger)
+            else
             {
-                var level = LogLevel.FromString(trigger.Text.NextWord());
-                var isSet = trigger.Text.HasNext && trigger.Text.NextBool();
+                var mod = trigger.Text.NextModifiers();
+                var query = mod.Contains("q");
+                var name = trigger.Text.NextWord();
 
-                foreach (var rule in LogManager.Configuration.LoggingRules)
+                Character chr;
+                if (mod.Contains("a"))
                 {
-                    bool enable = (isSet) || (!rule.IsLoggingEnabledForLevel(level));
-                    if (enable)
+                    var acc = RealmServer.Instance.GetLoggedInAccount(name);
+                    if (acc != null)
                     {
-                        rule.EnableLoggingForLevel(level);
+                        chr = acc.ActiveCharacter;
                     }
                     else
                     {
-                        rule.DisableLoggingForLevel(level);
+                        chr = null;
                     }
-                    trigger.Reply("{0}-Messages for \"{1}\" {2}.", level, rule.LoggerNamePattern, enable ? "enabled" : "disabled");
+                }
+                else
+                {
+                    chr = World.GetCharacter(name, false);
+                }
+
+                if (chr == null)
+                {
+                    trigger.Reply(RealmLangKey.CmdSummonPlayerNotOnline, name);
+                }
+                else
+                {
+                    // staff of higher ranks cannot be insta-summoned
+                    if (query || chr.Role > trigger.Args.Character.Role)
+                    {
+                        chr.StartSummon(trigger.Args.Character);
+                    }
+                    else
+                    {
+                        chr.TeleportTo(trigger.Args.Target.Map, trigger.Args.Target.Position);
+                    }
                 }
             }
         }
-        #endregion
-    }
-    #endregion
-
-    #region Dump
-    public class DumpThreadPoolInfoCommand : RealmServerCommand
-    {
-        protected DumpThreadPoolInfoCommand() { }
-
-        protected override void Initialize()
-        {
-            base.Init("DumpTPInfo");
-            EnglishDescription = "Dumps information about the thread pool.";
-        }
-
-        public override RoleStatus RequiredStatusDefault
-        {
-            get
-            {
-                return RoleStatus.Admin;
-            }
-        }
 
         public override bool RequiresCharacter
         {
             get
             {
-                return false;
+                return true;
             }
         }
 
@@ -824,76 +522,8 @@ namespace WCell.RealmServer.Commands
         {
             get
             {
-                return ObjectTypeCustom.None;
+                return ObjectTypeCustom.All;
             }
-        }
-
-        public override void Process(CmdTrigger<RealmServerCmdArgs> trigger)
-        {
-            int minTpThreads, maxTpThreads, availTpThreads, minIOCPThreads, maxIOCPThreads, availIOCPThreads;
-            ThreadPool.GetMinThreads(out minTpThreads, out minIOCPThreads);
-            ThreadPool.GetMaxThreads(out maxTpThreads, out maxIOCPThreads);
-            ThreadPool.GetAvailableThreads(out availTpThreads, out availIOCPThreads);
-
-            trigger.Reply("[Thread Pool] {0} available worker threads out of {1} ({2} minimum)",
-                            availTpThreads.ToString(), maxTpThreads.ToString(), minTpThreads.ToString());
-            trigger.Reply("[Thread Pool] {0} available IOCP threads out of {1} ({2} minimum)",
-                            availIOCPThreads.ToString(), maxIOCPThreads.ToString(), minIOCPThreads.ToString());
-        }
-    }
-
-    public class DumpNetworkInfoCommand : RealmServerCommand
-    {
-        protected DumpNetworkInfoCommand() { }
-
-        protected override void Initialize()
-        {
-            Init("DumpNetworkInfo");
-            EnglishDescription = "Dumps network information including data sent and received, buffer pools, etc.";
-        }
-
-        public override RoleStatus RequiredStatusDefault
-        {
-            get
-            {
-                return RoleStatus.Admin;
-            }
-        }
-
-        public override bool RequiresCharacter
-        {
-            get
-            {
-                return false;
-            }
-        }
-
-        public override ObjectTypeCustom TargetTypes
-        {
-            get
-            {
-                return ObjectTypeCustom.None;
-            }
-        }
-
-        public override void Process(CmdTrigger<RealmServerCmdArgs> trigger)
-        {
-            long totalDataSent, totalDataReceived, totalAllocMemory;
-            int bufferPoolSize, bufferPoolAvail;
-
-            totalDataSent = RealmClient.TotalBytesSent;
-            totalDataReceived = RealmClient.TotalBytesReceived;
-
-            bufferPoolSize = BufferManager.Default.TotalSegmentCount;
-            bufferPoolAvail = BufferManager.Default.AvailableSegmentsCount;
-            totalAllocMemory = BufferManager.GlobalAllocatedMemory;
-
-            trigger.Reply("[Network] Total data sent: {0}, Total data received: {1}",
-                            WCellUtil.FormatBytes(totalDataSent),
-                            WCellUtil.FormatBytes(totalDataReceived));
-            trigger.Reply("[Buffers] {0} available packet buffers out of {1}",
-                            bufferPoolAvail.ToString(), bufferPoolSize.ToString());
-            trigger.Reply("[Buffers] {0} allocated globally", WCellUtil.FormatBytes(totalAllocMemory));
         }
     }
     #endregion
