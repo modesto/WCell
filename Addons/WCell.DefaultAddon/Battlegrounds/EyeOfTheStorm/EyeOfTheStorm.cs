@@ -14,8 +14,12 @@ using WCell.RealmServer.Battlegrounds;
 using WCell.RealmServer.Chat;
 using WCell.RealmServer.Entities;
 using WCell.RealmServer.GameObjects;
+using WCell.RealmServer.Global;
 using WCell.RealmServer.Handlers;
 using WCell.RealmServer.Lang;
+using WCell.RealmServer.NPCs;
+using WCell.RealmServer.NPCs.Spawns;
+using WCell.Util.Graphics;
 using WCell.Util.Variables;
 
 namespace WCell.Addons.Default.Battlegrounds.EyeOfTheStorm
@@ -42,6 +46,9 @@ namespace WCell.Addons.Default.Battlegrounds.EyeOfTheStorm
             MaxScoreDefault = 1600;
             NearVictoryScoreDefault = 1400;
         }
+
+        [Variable("EOTSPrepTimeMillis")]
+        public static int EOTSPreparationTimeMillis = 60 * 1000;
         #endregion
 
         #region Fields
@@ -55,6 +62,10 @@ namespace WCell.Addons.Default.Battlegrounds.EyeOfTheStorm
         public int NearVictoryScore;
         public bool isInformatedNearVictory;
         private AreaTrigger _felReaverAT;
+        private AreaTrigger _bloodelf1;
+        private AreaTrigger _bloodelf2;
+        private AreaTrigger _bloodelf3;
+        
         #endregion
 
         #region Props
@@ -131,6 +142,9 @@ namespace WCell.Addons.Default.Battlegrounds.EyeOfTheStorm
             MaxScore = MaxScoreDefault;
             NearVictoryScore = NearVictoryScoreDefault;
             _felReaverAT = AreaTriggerMgr.GetTrigger(AreaTriggerId.EyeOfTheStormFelReaverRuinsPad);
+            _bloodelf1 = AreaTriggerMgr.GetTrigger(AreaTriggerId.EyeOfTheStormBloodElfTower);
+            _bloodelf2 = AreaTriggerMgr.GetTrigger(AreaTriggerId.EyeOfTheStormBloodElfTowerPad);
+            _bloodelf3 = AreaTriggerMgr.GetTrigger(AreaTriggerId.EyeOfTheStormBloodElfTowerPad_2);
         }
 
         protected override void OnStart()
@@ -138,36 +152,39 @@ namespace WCell.Addons.Default.Battlegrounds.EyeOfTheStorm
             base.OnStart();
             _hForcefield.State = GameObjectState.Disabled;
             _aForcefield.State = GameObjectState.Disabled;
-            Characters.SendSystemMessage("The Battle Begins!");
+            Characters.SendSystemMessage(DefaultAddonLocalizer.Instance.GetTranslations(AddonMsgKey.EOTSOnStart));
         }
 
         protected override void OnFinish(bool disposing)
         {
             base.OnFinish(disposing);
+            Characters.SendSystemMessage(DefaultAddonLocalizer.Instance.GetTranslations(AddonMsgKey.EOTSOnFinish), Winner.Side.ToString());
         }
 
         protected override void OnPrepareHalftime()
         {
             base.OnPrepareHalftime();
-            Characters.SendSystemMessage("The Battle Begins Shortly");
+            var time = RealmLocalizer.FormatTimeSecondsMinutes(PreparationTimeMillis / 2000);
+            Characters.SendSystemMessage(DefaultAddonLocalizer.Instance.GetTranslations(AddonMsgKey.EOTSOnPrepareHalfTime), time);
         }
 
         protected override void OnPrepareBegin()
         {
             base.OnPrepareBegin();
-            Characters.SendSystemMessage("Prepatation Begins");
+            var time = RealmLocalizer.FormatTimeSecondsMinutes(PreparationTimeMillis / 1000);
+            Characters.SendSystemMessage(DefaultAddonLocalizer.Instance.GetTranslations(AddonMsgKey.EOTSOnPrepareBegin), time);
         }
 
         protected override void OnLeave(Character chr)
         {
             base.OnLeave(chr);
-            Characters.SendSystemMessage(DefaultAddonLocalizer.Instance.GetTranslations(AddonMsgKey.ABOnLeave), chr.Name);
+            Characters.SendSystemMessage(DefaultAddonLocalizer.Instance.GetTranslations(AddonMsgKey.EOTSOnLeave), chr.Name);
         }
        
         protected override void OnEnter(Character chr)
         {
             base.OnEnter(chr);
-            Characters.SendSystemMessage(DefaultAddonLocalizer.Instance.GetTranslations(AddonMsgKey.ABOnEnter), chr.Name);
+            Characters.SendSystemMessage(DefaultAddonLocalizer.Instance.GetTranslations(AddonMsgKey.EOTSOnEnter), chr.Name);
         }
         
         protected override void SpawnGOs()
@@ -181,6 +198,16 @@ namespace WCell.Addons.Default.Battlegrounds.EyeOfTheStorm
             _aForcefield = hordeDoorEntry.FirstSpawnEntry.Spawn(this);
             _netherstormFlag = netherstormFlagEntry.FirstSpawnEntry.Spawn(this);
         }
+
+        protected override void SpawnNPCs()
+        {
+            base.SpawnNPCs();
+            NPCEntry hordeSGhome = NPCMgr.GetEntry(Constants.NPCs.NPCId.HordeSpiritGuide);
+            NPCEntry allianceSGhome = NPCMgr.GetEntry(Constants.NPCs.NPCId.AllianceSpiritGuide); ;
+            
+            hordeSGhome.SpawnAt(this, new Vector3(1807.737f, 1539.417f, 1267.625f), false);
+            allianceSGhome.SpawnAt(this, new Vector3(2523.711f, 1596.52f, 1269.361f), false);
+        }
         
         public override void FinishFight()
         {
@@ -190,20 +217,48 @@ namespace WCell.Addons.Default.Battlegrounds.EyeOfTheStorm
         #endregion
         private void TestTrigger(Character chr)
         {
+            if (_bloodelf1.CheckTrigger(chr) == true)
+            {
+                Characters.SendSystemMessage("Bloodelf 1 Triggered");
+            }
+            if (_bloodelf2.CheckTrigger(chr) == true)
+            {
+                Characters.SendSystemMessage("Bloodelf 2 Triggered");
+            }
+            if (_bloodelf3.CheckTrigger(chr) == true)
+            {
+                Characters.SendSystemMessage("Bloodelf 3 Triggered");
+            }
             if (_felReaverAT.CheckTrigger(chr) == true)
             {
                 Characters.SendSystemMessage("Fel Reaver Ruins Triggered");
             }
         }
 
+        private void Graveyards(Character chr, BattlegroundTeam team)
+        {
+        }
+
         private void InformNearVictory(BattlegroundTeam team, int score)
         {
-            Characters.SendSystemMessage(DefaultAddonLocalizer.Instance.GetTranslations(AddonMsgKey.ABNearVictory), team.Side.ToString(), score);
-            MiscHandler.SendPlaySoundToMap(this, (uint)ABSounds.NearVictory);
+            Characters.SendSystemMessage(DefaultAddonLocalizer.Instance.GetTranslations(AddonMsgKey.EOTSNearVictory), team.Side.ToString(), score);
             isInformatedNearVictory = true;
         }
 
-        #region Spell/GO fixes and event registration
+        #region NPC Fixes
+        [Initialization]
+        [DependentInitialization(typeof(NPCMgr))]        
+        public static void FixNPCs()
+        {
+            var hordeSpiritGuideEntry = NPCMgr.GetEntry(Constants.NPCs.NPCId.HordeSpiritGuide);
+            var allianceSpiritGuideEntry = NPCMgr.GetEntry(Constants.NPCs.NPCId.AllianceSpiritGuide);
+            
+            hordeSpiritGuideEntry.SpawnEntries.ForEach(spawn => spawn.AutoSpawns = false);
+            allianceSpiritGuideEntry.SpawnEntries.ForEach(spawn => spawn.AutoSpawns = false);
+        }
+        #endregion
+
+        #region GO Fixes
         [Initialization]
         [DependentInitialization(typeof(GOMgr))]
         public static void FixGOs()
@@ -233,16 +288,32 @@ namespace WCell.Addons.Default.Battlegrounds.EyeOfTheStorm
             netherstorm2Entry.SpawnEntries.ForEach(spawn => spawn.AutoSpawns = false);
             netherstorm3Entry.SpawnEntries.ForEach(spawn => spawn.AutoSpawns = false);
 
-            
+            GOEntry foodBuff = GOMgr.GetEntry(GOEntryId.SpeedBuff);
+            GOEntry speedBuff = GOMgr.GetEntry(GOEntryId.SpeedBuff);
+            GOEntry berserkBuff = GOMgr.GetEntry(GOEntryId.BerserkBuff);
+
+            foodBuff.FirstSpawnEntry.MapId = MapId.EyeOfTheStorm;
+            foodBuff.FirstSpawnEntry.AutoSpawns = false;
+            foodBuff.FirstSpawnEntry.Scale = 1f;
+
+            speedBuff.FirstSpawnEntry.MapId = MapId.EyeOfTheStorm;
+            speedBuff.FirstSpawnEntry.AutoSpawns = false;
+            speedBuff.FirstSpawnEntry.Scale = 1f;
+
+            berserkBuff.FirstSpawnEntry.MapId = MapId.EyeOfTheStorm;
+            berserkBuff.FirstSpawnEntry.AutoSpawns = false;
+            berserkBuff.FirstSpawnEntry.Scale = 1f;
         }
+        #endregion
         public void RegisterEvents()
         {
             AreaTrigger bloodelftowerAT = AreaTriggerMgr.GetTrigger(AreaTriggerId.EyeOfTheStormBloodElfTower);
             AreaTrigger draeneiruinsAT = AreaTriggerMgr.GetTrigger(AreaTriggerId.EyeOfTheStormDraeneiRuins);
             AreaTrigger felreaverruinsAT = AreaTriggerMgr.GetTrigger(AreaTriggerId.EyeOfTheStormFelReaverRuins);
             AreaTrigger magetowerAT = AreaTriggerMgr.GetTrigger(AreaTriggerId.EyeOfTheStormMageTowerBottom);
+            AreaTrigger bloodelftower2 = AreaTriggerMgr.GetTrigger(AreaTriggerId.EyeOfTheStormBloodElfTowerPad);
+            AreaTrigger bloodelftower3 = AreaTriggerMgr.GetTrigger(AreaTriggerId.EyeOfTheStormBloodElfTowerPad_2);
         }
-        #endregion
     }
     public delegate void BaseHandler(Character chr);
 }

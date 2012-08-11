@@ -16,8 +16,6 @@ namespace WCell.Addons.Default.Battlegrounds.EyeOfTheStorm.Bases
             baseAllianceControlled = WorldStateId.EOTSBloodElfTowerAllianceControl;
             baseHordeContested = WorldStateId.EOTSBloodElfTowerHordeContested;
             baseHordeControlled = WorldStateId.EOTSBloodElfTowerHordeControl;
-
-            //Names = DefaultAddonLocalizer.Instance.GetTranslations(AddonMsgKey.ABBlacksmith);
         }
 
         protected override void AddSpawns()

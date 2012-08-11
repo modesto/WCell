@@ -92,6 +92,29 @@
 	<Item Key="WSReturnFlagByPlayer">
 	  <Value>The {0} flag was returned to its base by {1}!</Value>
 	</Item>
+  
+    <!-- Eye Of The Storm -->
+  <Item Key="EOTSOnStart">
+     <Value>The battle for Eye of the Storm has begun!</Value>
+  </Item>
+  <Item Key="EOTSOnFinish">
+    <Value>The {0} wins!</Value>
+  </Item>
+  <Item Key="EOTSOnPrepareBegin">
+    <Value>The battle for Eye of the Storm begins in {0}</Value>
+  </Item>
+  <Item Key="EOTSOnPrepareHalfTime">
+    <Value>The battle for Eye of the Storm begins in {0} seconds. Prepare yourselves!</Value>
+  </Item>
+  <Itme Key="EOTSOnEnter">
+    <Value>{0} has entered the battle!</Value>
+  </Itme>
+  <Item Key="EOTSOnLeave">
+    <Value>{0} has left the battle!</Value>
+  </Item>
+  <Item Key="EOTSNearVictory">
+    <Value>The {0} has gathered {1} resources, and is near victory!</Value>
+  </Item>
 	
 		<!-- Scarlet Monastery -->
 	<Item Key="VishasAggro">

@@ -38,6 +38,16 @@
         WSReturnFlagByPlayer,
         #endregion
 
+        #region Eye Of The Storm
+        EOTSOnStart,
+        EOTSOnFinish,
+        EOTSOnPrepareBegin,
+        EOTSOnPrepareHalfTime,
+        EOTSOnEnter,
+        EOTSOnLeave,
+        EOTSNearVictory,
+        #endregion
+
         #region Guard Gossip Items
         GuardBank,
         GuardIronforge,

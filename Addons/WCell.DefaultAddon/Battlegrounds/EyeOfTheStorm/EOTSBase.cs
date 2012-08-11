@@ -6,8 +6,10 @@ using WCell.Constants.World;
 using WCell.Core.Timers;
 using WCell.RealmServer.Entities;
 using WCell.RealmServer.GameObjects.Spawns;
+using WCell.RealmServer.NPCs.Spawns;
 using WCell.RealmServer.Handlers;
 using WCell.RealmServer.Lang;
+using WCell.RealmServer.NPCs;
 using WCell.Util.Variables;
 using WCell.Addons.Default.Battlegrounds.EyeOfTheStorm;
 using WCell.RealmServer.AreaTriggers;
@@ -32,11 +34,7 @@ namespace WCell.Addons.Default.Battlegrounds.EyeOfTheStorm
         protected GOSpawnEntry allianceBannerSpawn;
         protected GOSpawnEntry hordeBannerSpawn;
 
-        /*protected GOSpawnEntry allianceAttackBannerSpawn;
-        protected GOSpawnEntry hordeAttackBannerSpawn;
-
-       
-        public bool GivesScore;
+       /*public bool GivesScore;
 
         public TimerEntry StartScoreTimer;
         public TimerEntry CaptureTimer;*/

@@ -16,8 +16,6 @@ namespace WCell.Addons.Default.Battlegrounds.EyeOfTheStorm.Bases
             baseAllianceControlled = WorldStateId.EOTSFelReaverAllianceControl;
             baseHordeContested = WorldStateId.EOTSFelReaverHordeContested;
             baseHordeControlled = WorldStateId.EOTSFelReaverHordeControl;
-
-            //Names = DefaultAddonLocalizer.Instance.GetTranslations(AddonMsgKey.ABBlacksmith);
         }
 
         protected override void AddSpawns()
