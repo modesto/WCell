@@ -5,262 +5,262 @@ using WCell.RealmServer.Handlers;
 
 namespace WCell.RealmServer.Battlegrounds
 {
-    /// <summary>
-    /// Each side of a Battelground has its own Queue
-    /// </summary>
-    public abstract class BattlegroundTeamQueue
-    {
-        protected readonly BattlegroundQueue _parentQueue;
-        protected readonly BattlegroundSide m_Side;
-        protected int m_chrCount;
+	/// <summary>
+	/// Each side of a Battelground has its own Queue
+	/// </summary>
+	public abstract class BattlegroundTeamQueue
+	{
+		protected readonly BattlegroundQueue _parentQueue;
+		protected readonly BattlegroundSide m_Side;
+		protected int m_chrCount;
 
-        public readonly LinkedList<BattlegroundRelation> PendingRequests = new LinkedList<BattlegroundRelation>();
+		public readonly LinkedList<BattlegroundRelation> PendingRequests = new LinkedList<BattlegroundRelation>();
 
-        protected BattlegroundTeamQueue(BattlegroundQueue parentQueue, BattlegroundSide side)
-        {
-            _parentQueue = parentQueue;
-            m_Side = side;
-        }
+		protected BattlegroundTeamQueue(BattlegroundQueue parentQueue, BattlegroundSide side)
+		{
+			_parentQueue = parentQueue;
+			m_Side = side;
+		}
 
-        /// <summary>
-        /// Warning: May be null if this belongs to an <see cref="InstanceBattlegroundQueue"/> after the BG has been disposed
-        /// </summary>
-        public BattlegroundQueue ParentQueue
-        {
-            get { return _parentQueue; }
-        }
 
-        public int CharacterCount
-        {
-            get { return m_chrCount; }
-        }
+		/// <summary>
+		/// Warning: May be null if this belongs to an <see cref="InstanceBattlegroundQueue"/> after the BG has been disposed
+		/// </summary>
+		public BattlegroundQueue ParentQueue
+		{
+			get { return _parentQueue; }
+		}
 
-        public int RelationCount
-        {
-            get { return PendingRequests.Count; }
-        }
+		public int CharacterCount
+		{
+			get { return m_chrCount; }
+		}
 
-        public BattlegroundSide Side
-        {
-            get { return m_Side; }
-        }
+		public int RelationCount
+		{
+			get { return PendingRequests.Count; }
+		}
 
-        public ICharacterSet GetCharacterSet(Character chr, bool asGroup)
-        {
-            // we are working with a non-synchronized Character object here
-            if (asGroup)
-            {
-                var group = chr.Group;
-                if (group == null || !group.IsLeader(chr))
-                {
-                    // invalid request
-                    GroupHandler.SendResult(chr, GroupResult.DontHavePermission);
-                }
-                else
-                {
-                    var chrs = group.GetAllCharacters();
+		public BattlegroundSide Side
+		{
+			get { return m_Side; }
+		}
 
-                    // if no characters in the group, return the original character
-                    if (chrs.Length == 0)
-                        return chr;
+		public ICharacterSet GetCharacterSet(Character chr, bool asGroup)
+		{
+			// we are working with a non-synchronized Character object here
+			if (asGroup)
+			{
+				var group = chr.Group;
+				if (group == null || !group.IsLeader(chr))
+				{
+					// invalid request
+					GroupHandler.SendResult(chr, GroupResultType.Swap, GroupResult.DontHavePermission);
+				}
+				else
+				{
+					var chrs = group.GetAllCharacters();
 
-                    // make sure the group isn't bigger than the max team size for this BG
-                    if (chrs.Length > _parentQueue.Template.MaxPlayersPerTeam)
-                    {
-                        BattlegroundHandler.SendBattlegroundError(chr, BattlegroundJoinError.GroupJoinedNotEligible);
-                        return null;
-                    }
+					// if no characters in the group, return the original character
+					if (chrs.Length == 0)
+						return chr;
 
-                    // make sure there are no deserters
-                    foreach (Character groupChr in chrs)
-                    {
-                        if (groupChr != null && groupChr.Battlegrounds.IsDeserter)
-                        {
-                            BattlegroundHandler.SendBattlegroundError(group, BattlegroundJoinError.Deserter);
-                            return null;
-                        }
-                    }
+					// make sure the group isn't bigger than the max team size for this BG
+					if (chrs.Length > _parentQueue.Template.MaxPlayersPerTeam)
+					{
+						BattlegroundHandler.SendBattlegroundError(chr, BattlegroundJoinError.GroupJoinedNotEligible);
+						return null;
+					}
 
-                    var list = new SynchronizedCharacterList(Side.GetFactionGroup());
+					// make sure there are no deserters
+					foreach(Character groupChr in chrs)
+					{
+						if (groupChr != null && groupChr.Battlegrounds.IsDeserter)
+						{
+							BattlegroundHandler.SendBattlegroundError(group, BattlegroundJoinError.Deserter);
+							return null;
+						}
+					}
 
-                    foreach (var groupChr in chrs)
-                    {
-                        if (groupChr.IsInWorld && (groupChr.GodMode || _parentQueue.CanEnter(groupChr)))
-                        {
-                            list.Add(groupChr);
-                        }
-                        else
-                        {
-                            // cannot join the same team
-                            BattlegroundHandler.SendBattlegroundError(groupChr, BattlegroundJoinError.GroupJoinedNotEligible);
-                        }
-                    }
+					var list = new SynchronizedCharacterList(Side.GetFactionGroup());
 
-                    return list;
-                }
-            }
-            else
-            {
-                // enqueue the character if they aren't a deserter
-                if (!chr.Battlegrounds.IsDeserter)
-                    return chr;
+					foreach(var groupChr in chrs)
+					{
+						if (groupChr.IsInWorld && (groupChr.GodMode || _parentQueue.CanEnter(groupChr)))
+						{
+							list.Add(groupChr);
+						}
+						else
+						{
+							// cannot join the same team
+							BattlegroundHandler.SendBattlegroundError(groupChr, BattlegroundJoinError.GroupJoinedNotEligible);
+						}
+					}
 
-                BattlegroundHandler.SendBattlegroundError(chr, BattlegroundJoinError.Deserter);
-            }
+					return list;
+				}
+			}
+			else
+			{
+				// enqueue the character if they aren't a deserter
+				if (!chr.Battlegrounds.IsDeserter)
+					return chr;
 
-            return null;
-        }
+				BattlegroundHandler.SendBattlegroundError(chr, BattlegroundJoinError.Deserter);
+			}
 
-        internal void Enqueue(BattlegroundRelation request)
-        {
-            if (_parentQueue.RequiresLocking)
-            {
-                lock (PendingRequests)
-                {
-                    PendingRequests.AddLast(request);
-                    m_chrCount += request.Characters.CharacterCount;
-                }
-            }
-            else
-            {
-                PendingRequests.AddLast(request);
-                m_chrCount += request.Characters.CharacterCount;
-            }
-        }
+			return null;
+		}
 
-        public BattlegroundRelation Enqueue(Character chr, bool asGroup)
-        {
-            var chrs = GetCharacterSet(chr, asGroup);
-            if (chrs != null)
-            {
-                return Enqueue(chrs);
-            }
-            return null;
-        }
+		internal void Enqueue(BattlegroundRelation request)
+		{
+			if (_parentQueue.RequiresLocking)
+			{
+				lock (PendingRequests)
+				{
+					PendingRequests.AddLast(request);
+					m_chrCount += request.Characters.CharacterCount;
+				}
+			}
+			else
+			{
+				PendingRequests.AddLast(request);
+				m_chrCount += request.Characters.CharacterCount;
+			}
+		}
 
-        public virtual BattlegroundRelation Enqueue(ICharacterSet chrs)
-        {
-            var request = new BattlegroundRelation(this, chrs);
+		public BattlegroundRelation Enqueue(Character chr, bool asGroup)
+		{
+			var chrs = GetCharacterSet(chr, asGroup);
+			if (chrs != null)
+			{
+				return Enqueue(chrs);
+			}
+			return null;
+		}
 
-            chrs.ForeachCharacter(chr =>
-                chr.ExecuteInContext(() =>
-                {
-                    chr.Battlegrounds.AddRelation(request);
-                }));
+		public virtual BattlegroundRelation Enqueue(ICharacterSet chrs)
+		{
+			var request = new BattlegroundRelation(this, chrs);
 
-            Enqueue(request);
-            return request;
-        }
+			chrs.ForeachCharacter(chr =>
+				chr.ExecuteInContext(() => {
+					chr.Battlegrounds.AddRelation(request);
+				}));
 
-        public BattlegroundQueue ParentQueueBase
-        {
-            get { return _parentQueue; }
-        }
+			Enqueue(request);
+			return request;
+		}
 
-        internal void Remove(BattlegroundRelation relation)
-        {
-            if (_parentQueue.RequiresLocking)
-            {
-                lock (PendingRequests)
-                {
-                    RemoveUnlocked(relation);
-                }
-            }
-            else
-            {
-                RemoveUnlocked(relation);
-            }
-        }
+		public BattlegroundQueue ParentQueueBase
+		{
+			get { return _parentQueue; }
+		}
 
-        private void RemoveUnlocked(BattlegroundRelation relation)
-        {
-            var node = PendingRequests.First;
-            while (node != null)
-            {
-                if (node.Value == relation)
-                {
-                    m_chrCount -= relation.Characters.CharacterCount;
+		internal void Remove(BattlegroundRelation relation)
+		{
+			if (_parentQueue.RequiresLocking)
+			{
+				lock (PendingRequests)
+				{
+					RemoveUnlocked(relation);
+				}
+			}
+			else
+			{
+				RemoveUnlocked(relation);
+			}
+		}
 
-                    var next = node.Next;
-                    relation.IsEnqueued = false;
-                    PendingRequests.Remove(node);
-                    node = next;
+		private void RemoveUnlocked(BattlegroundRelation relation)
+		{
+			var node = PendingRequests.First;
+			while (node != null)
+			{
+				if (node.Value == relation)
+				{
+					m_chrCount -= relation.Characters.CharacterCount;
 
-                    if (node == null)
-                    {
-                        // was the last node
-                        break;
-                    }
+					var next = node.Next;
+					relation.IsEnqueued = false;
+					PendingRequests.Remove(node);
+					node = next;
 
-                    // next node already selected
-                    continue;
-                }
-                node = node.Next;
-            }
-        }
+					if (node == null)
+					{
+						// was the last node
+						break;
+					}
 
-        /// <summary>
-        /// Removes the given amount of Characters from this Queue and adds them
-        /// to the given <see cref="Battleground"/>
-        /// </summary>
-        /// <param name="amount"></param>
-        /// <param name="bg"></param>
-        /// <returns>The amount of dequeued Characters</returns>
-        internal int DequeueCharacters(int amount, Battleground bg)
-        {
-            bg.EnsureContext();
+					// next node already selected
+					continue;
+				}
+				node = node.Next;
+			}
+		}
 
-            var node = PendingRequests.First;
-            if (node == null)
-            {
-                return 0;
-            }
+		/// <summary>
+		/// Removes the given amount of Characters from this Queue and adds them
+		/// to the given <see cref="Battleground"/>
+		/// </summary>
+		/// <param name="amount"></param>
+		/// <param name="bg"></param>
+		/// <returns>The amount of dequeued Characters</returns>
+		internal int DequeueCharacters(int amount, Battleground bg)
+		{
+			bg.EnsureContext();
 
-            if (_parentQueue.RequiresLocking)
-            {
-                lock (PendingRequests)
-                {
-                    return Dequeue(amount, bg, node);
-                }
-            }
-            else
-            {
-                return Dequeue(amount, bg, node);
-            }
-        }
+			var node = PendingRequests.First;
+			if (node == null)
+			{
+				return 0;
+			}
 
-        private int Dequeue(int amount, Battleground bg, LinkedListNode<BattlegroundRelation> node)
-        {
-            var team = bg.GetTeam(Side);
-            var added = 0;
+			if (_parentQueue.RequiresLocking)
+			{
+				lock (PendingRequests)
+				{
+					return Dequeue(amount, bg, node);
+				}
+			}
+			else
+			{
+				return Dequeue(amount, bg, node);
+			}
+		}
 
-            do
-            {
-                var relation = node.Value;
-                if (relation.Count <= amount)
-                {
-                    m_chrCount -= relation.Characters.CharacterCount;
+		int Dequeue(int amount, Battleground bg, LinkedListNode<BattlegroundRelation> node)
+		{
+			var team = bg.GetTeam(Side);
+			var added = 0;
 
-                    added += team.Invite(relation.Characters);
+			do
+			{
+				var relation = node.Value;
+				if (relation.Count <= amount)
+				{
+					m_chrCount -= relation.Characters.CharacterCount;
 
-                    relation.IsEnqueued = false;
+					added += team.Invite(relation.Characters);
 
-                    var next = node.Next;
-                    PendingRequests.Remove(node);
-                    node = next;
+					relation.IsEnqueued = false;
 
-                    if (node == null)
-                    {
-                        // was the last node
-                        break;
-                    }
+					var next = node.Next;
+					PendingRequests.Remove(node);
+					node = next;
 
-                    // next node already selected
-                    continue;
-                }
-            } while ((node = node.Next) != null && added <= amount);
+					if (node == null)
+					{
+						// was the last node
+						break;
+					}
 
-            return added;
-        }
-    }
+					// next node already selected
+					continue;
+				}
+			} while ((node = node.Next) != null && added <= amount);
+
+			return added;
+		}
+	}
 }

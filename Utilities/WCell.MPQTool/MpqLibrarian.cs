@@ -3,26 +3,28 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using WCell.MPQTool.StormLibWrapper;
+using WCell.Util.NLog;
+using WCell.Constants.World;
 
 //using MpqReader;
 
 namespace WCell.MPQTool
 {
-    /// <summary>
-    /// Provides access to all archives in a path.
-    /// </summary>
+	/// <summary>
+	/// Provides access to all archives in a path.
+	/// </summary>
     public class MpqLibrarian
     {
-        private static MpqLibrarian DefaultLibrarian;
+    	private static MpqLibrarian DefaultLibrarian;
 
-        public static MpqLibrarian GetDefaultFinder(string wowPath)
-        {
-            if (DefaultLibrarian == null)
-            {
-                DefaultLibrarian = new MpqLibrarian(DBCTool.FindWowDirOrThrow(wowPath));
-            }
-            return DefaultLibrarian;
-        }
+    	public static MpqLibrarian GetDefaultFinder(string wowPath)
+		{
+			if (DefaultLibrarian == null)
+			{
+				DefaultLibrarian = new MpqLibrarian(DBCTool.FindWowDirOrThrow(wowPath));
+			}
+			return DefaultLibrarian;
+		}
 
         public readonly List<MpqArchive> MPQArchives;
 
@@ -47,7 +49,7 @@ namespace WCell.MPQTool
             foreach (var localeDir in localeDirectorys)
             {
                 var locale = localeDir.Substring(localeDir.Length - 4, 4);
-                switch (locale)
+                switch(locale)
                 {
                     case "enUS":
                     case "enGB":
@@ -72,19 +74,20 @@ namespace WCell.MPQTool
                 mpqNames.Add(Path.Combine("Data\\", locale, "base-" + locale + ".MPQ"));
             }
 
+
             foreach (var mpqName in mpqNames)
             {
                 try
                 {
                     var path = Path.Combine(mpqPath, mpqName);
-                    if (File.Exists(path))
+                    if(File.Exists(path))
                         MPQArchives.Add(new MpqArchive(path));
                     else
                         Console.WriteLine("File not found: {0}", path);
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine("Exception thrown in MpqManager constructor." + e);
+                    LogUtil.ErrorException("Exception thrown in MpqManager constructor.", e);
                 }
             }
         }
@@ -98,9 +101,9 @@ namespace WCell.MPQTool
                     return archive.OpenFile(fileName).GetStream();
                 }
             }
-            throw new Exception(String.Format("Could not find file \"{0}\" in any of the {1} archives",
-                    fileName,
-                    MPQArchives.Count));
+            throw new Exception(String.Format("Could not find file \"{0}\" in any of the {1} archives", 
+					fileName,
+					MPQArchives.Count));
         }
 
         public bool FileExists(string fileName)
@@ -108,9 +111,14 @@ namespace WCell.MPQTool
             return MPQArchives.Any(archive => archive.FileExists(fileName));
         }
 
-        public IEnumerable<string> GetAllFiles(string match)
+        public MpqArchive GetArchive(string fileName)
         {
-            return MPQArchives.SelectMany(archive => archive.FindAllFiles(match));
+            return MPQArchives.FirstOrDefault(arch => arch.FileExists(fileName));
         }
+
+		public IEnumerable<string> GetAllFiles(string match)
+		{
+			return MPQArchives.SelectMany(archive => archive.FindAllFiles(match));
+		}
     }
 }
