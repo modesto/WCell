@@ -1,4 +1,4 @@
-﻿/*************************************************************************
+/*************************************************************************
  *
  *   file		: NPC.cs
  *   copyright		: (C) The WCell Team
@@ -187,9 +187,7 @@ namespace WCell.RealmServer.Entities
             // Set model after Scale
             Model = m_entry.GetRandomModel();
 
-            GossipMenu = (m_spawnPoint != null && m_spawnPoint.SpawnEntry.DefaultGossip != null) ?
-                                m_spawnPoint.SpawnEntry.DefaultGossip :
-                                entry.DefaultGossip;
+            GossipMenu = entry.DefaultGossip; // set gossip menu
 
             // TODO: Init stats
             //for (int i = 0; i < 5; i++)

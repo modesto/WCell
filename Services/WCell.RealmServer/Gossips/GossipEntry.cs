@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using WCell.Constants.Misc;
+using WCell.Constants.NPCs;
 using WCell.RealmServer.Content;
 using WCell.RealmServer.NPCs;
 using WCell.Util.Data;
@@ -382,16 +383,18 @@ namespace WCell.RealmServer.Gossips
             else
             {
                 var entry = spawn.Entry;
-                if (spawn.DefaultGossip == null)
+                if (entry.DefaultGossip == null)
                 {
-                    spawn.DefaultGossip = new GossipMenu(gossipEntry);
-                }
-                else
-                {
-                    spawn.DefaultGossip.GossipEntry = gossipEntry;
+                    var menu = new GossipMenu(gossipEntry);
+                    entry.DefaultGossip = menu;
                 }
 
-                //entry.NPCFlags |= NPCFlags.Gossip;
+                else
+                {
+                    entry.DefaultGossip.GossipEntry = gossipEntry;
+                }
+
+                entry.NPCFlags |= NPCFlags.Gossip;
             }
         }
 
