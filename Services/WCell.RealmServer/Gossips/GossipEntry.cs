@@ -383,18 +383,17 @@ namespace WCell.RealmServer.Gossips
             else
             {
                 var entry = spawn.Entry;
-                if (entry.DefaultGossip == null)
+                if (spawn.DefaultGossip == null)
                 {
-                    var menu = new GossipMenu(gossipEntry);
-                    entry.DefaultGossip = menu;
+                    spawn.DefaultGossip = new GossipMenu(gossipEntry);
                 }
 
                 else
                 {
-                    entry.DefaultGossip.GossipEntry = gossipEntry;
+                    spawn.DefaultGossip.GossipEntry = gossipEntry;
                 }
 
-                entry.NPCFlags |= NPCFlags.Gossip;
+                //entry.NPCFlags |= NPCFlags.Gossip;
             }
         }
 

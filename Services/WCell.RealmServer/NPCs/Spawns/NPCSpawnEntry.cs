@@ -5,6 +5,7 @@ using WCell.Constants.World;
 using WCell.RealmServer.Content;
 using WCell.RealmServer.Entities;
 using WCell.RealmServer.Global;
+using WCell.RealmServer.Gossips;
 using WCell.RealmServer.Spawns;
 using WCell.RealmServer.Waypoints;
 using WCell.Util;
@@ -194,6 +195,9 @@ namespace WCell.RealmServer.NPCs.Spawns
         }
 
         #endregion Events
+
+        [NotPersistent]
+        public GossipMenu DefaultGossip;
 
         #region Waypoints
 
